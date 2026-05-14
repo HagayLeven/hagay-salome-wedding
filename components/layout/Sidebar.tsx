@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Home, Users, Handshake, Building2, Shirt, Wallet, CheckSquare, Image as ImageIcon, Settings } from 'lucide-react'
+import { Home, Users, Handshake, Building2, Shirt, Wallet, CheckSquare, Image as ImageIcon, Settings, UserCircle2 } from 'lucide-react'
 
 const items = [
   { href: '/dashboard', label: 'בית',        Icon: Home },
@@ -13,6 +13,7 @@ const items = [
   { href: '/budget',    label: 'תקציב',      Icon: Wallet },
   { href: '/tasks',     label: 'משימות',     Icon: CheckSquare },
   { href: '/gallery',   label: 'גלריה',      Icon: ImageIcon },
+  { href: '/users',     label: 'משתמשים',   Icon: UserCircle2 },
   { href: '/settings',  label: 'הגדרות',     Icon: Settings },
 ]
 

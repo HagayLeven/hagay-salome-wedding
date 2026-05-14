@@ -132,3 +132,26 @@ export interface ActivityItem {
   description: string
   createdAt: string
 }
+
+export type UserSide = 'GROOM' | 'BRIDE'
+export type PermissionLevel = 'edit' | 'view' | 'hidden'
+
+export interface UserPermissions {
+  guests: PermissionLevel
+  vendors: PermissionLevel
+  venues: PermissionLevel
+  attire: PermissionLevel
+  budget: PermissionLevel
+  tasks: PermissionLevel
+  gallery: PermissionLevel
+}
+
+export interface WeddingUser {
+  id: string
+  name: string
+  role: string
+  side: UserSide
+  avatar?: string
+  permissions: UserPermissions
+  createdAt: string
+}

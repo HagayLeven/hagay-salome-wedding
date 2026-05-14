@@ -1,4 +1,4 @@
-import { Guest, Vendor, Venue, AttireItem, Expense, Task, MediaItem, Settings, ActivityItem } from './types'
+import { Guest, Vendor, Venue, AttireItem, Expense, Task, MediaItem, Settings, ActivityItem, WeddingUser, UserPermissions } from './types'
 
 const KEYS = {
   guests: 'wp_guests',
@@ -10,6 +10,7 @@ const KEYS = {
   media: 'wp_media',
   settings: 'wp_settings',
   activity: 'wp_activity',
+  users: 'wp_users',
 }
 
 function uid() {
@@ -182,6 +183,35 @@ export const settingsStore = {
 // ── Activity ──────────────────────────────────────────────
 export const activityStore = {
   getAll: () => get<ActivityItem[]>(KEYS.activity, []),
+}
+
+// ── Users ──────────────────────────────────────────────
+const DEFAULT_PERMISSIONS: UserPermissions = {
+  guests: 'edit', vendors: 'edit', venues: 'edit',
+  attire: 'edit', budget: 'edit', tasks: 'edit', gallery: 'edit',
+}
+const FAMILY_PERMISSIONS: UserPermissions = {
+  guests: 'view', vendors: 'view', venues: 'view',
+  attire: 'view', budget: 'hidden', tasks: 'view', gallery: 'view',
+}
+
+export const userStore = {
+  getAll: () => get<WeddingUser[]>(KEYS.users, []),
+  create: (data: Omit<WeddingUser, 'id' | 'createdAt'>) => {
+    const users = userStore.getAll()
+    const user: WeddingUser = { ...data, id: uid(), createdAt: new Date().toISOString() }
+    set(KEYS.users, [...users, user])
+    return user
+  },
+  update: (id: string, data: Partial<WeddingUser>) => {
+    const users = userStore.getAll().map(u => u.id === id ? { ...u, ...data } : u)
+    set(KEYS.users, users)
+  },
+  delete: (id: string) => {
+    set(KEYS.users, userStore.getAll().filter(u => u.id !== id))
+  },
+  DEFAULT_PERMISSIONS,
+  FAMILY_PERMISSIONS,
 }
 
 // ── Utils ──────────────────────────────────────────────
