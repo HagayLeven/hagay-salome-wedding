@@ -22,9 +22,12 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div style={{ padding: '0 1.25rem 1.25rem', borderBottom: '1px solid var(--border)', marginBottom: '0.75rem' }}>
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-          <Image src="/logo.svg" alt="logo" width={40} height={40} style={{ borderRadius: '50%' }} />
-          <div>
+        <Link href="/dashboard" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+          <div style={{ position: 'relative', width: 72, height: 72, borderRadius: '50%', overflow: 'hidden',
+            border: '2px solid var(--gold)', boxShadow: '0 2px 12px rgba(201,169,110,.3)' }}>
+            <Image src="/couple.jpg" alt="חגי וסלומה" fill style={{ objectFit: 'cover', objectPosition: 'center top' }} />
+          </div>
+          <div style={{ textAlign: 'center' }}>
             <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic', fontSize: '1.05rem', color: 'var(--charcoal)', lineHeight: 1.1 }}>
               חגי &amp; סלומה
             </div>

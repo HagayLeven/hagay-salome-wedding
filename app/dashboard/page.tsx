@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { UserPlus, Handshake, Receipt, CheckSquare } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import CircularRing from '@/components/ui/CircularRing'
 import { guestStore, vendorStore, taskStore, expenseStore, settingsStore, activityStore, getDaysToWedding, formatILS, formatDate } from '@/lib/store'
 import type { Settings } from '@/lib/types'
@@ -56,6 +57,11 @@ export default function Dashboard() {
         {/* decorative circles */}
         <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: 'rgba(201,169,110,.05)' }} />
         <div style={{ position: 'absolute', bottom: -40, left: -40, width: 150, height: 150, borderRadius: '50%', background: 'rgba(201,169,110,.04)' }} />
+        {/* Couple photo */}
+        <div style={{ position: 'relative', width: 96, height: 96, borderRadius: '50%', overflow: 'hidden',
+          border: '3px solid var(--gold)', boxShadow: '0 4px 20px rgba(201,169,110,.35)', margin: '0 auto 1rem' }}>
+          <Image src="/couple.jpg" alt="חגי וסלומה" fill style={{ objectFit: 'cover', objectPosition: 'center top' }} />
+        </div>
         <CircularRing value={365 - days} max={365} size="xl" centerText={String(days)} centerSub="ימים" />
         <div style={{ marginTop: '1rem' }}>
           <div className="font-display" style={{ fontSize: '1.7rem', color: 'var(--charcoal)' }}>
