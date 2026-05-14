@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, UserPlus, Download, ChevronLeft } from 'lucide-react'
+import { Search, UserPlus, Download, ChevronLeft, ListPlus } from 'lucide-react'
 import Link from 'next/link'
 import { guestStore } from '@/lib/store'
 import type { Guest, GuestGroup, RsvpStatus, Side } from '@/lib/types'
@@ -72,12 +72,80 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
   )
 }
 
+function BulkImportDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => void; onSave: () => void }) {
+  const [text, setText] = useState('')
+  const [side, setSide] = useState<Side>('GROOM')
+  const [group, setGroup] = useState<GuestGroup>('FRIENDS')
+
+  const names = text.split('\n')
+    .map(l => l.replace(/^\+\s*/, '').trim())
+    .filter(l => l.length > 1)
+
+  function importAll() {
+    const existing = new Set(guestStore.getAll().map(g => g.name))
+    let added = 0
+    names.forEach(name => {
+      if (!existing.has(name)) {
+        guestStore.create({ name, phone: '', whatsapp: '', side, group, rsvpStatus: 'PENDING', invitationSent: false, invitationAcknowledged: false, attendanceConfirmed: false })
+        added++
+      }
+    })
+    setText('')
+    onSave()
+    alert(`יובאו ${added} מוזמנים בהצלחה`)
+  }
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.4)', zIndex: 60 }} />
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white',
+              borderRadius: '24px 24px 0 0', padding: '1.5rem 1.25rem 2rem', zIndex: 70,
+              boxShadow: '0 -8px 40px rgba(0,0,0,.15)', maxHeight: '85vh', overflowY: 'auto' }}>
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 1.25rem' }} />
+            <h3 style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.3rem' }}>ייבוא רשימה</h3>
+            <p style={{ fontSize: '0.78rem', color: 'var(--gray-muted)', marginBottom: '1rem' }}>הדבק שמות — שם בכל שורה</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <select className="input" value={side} onChange={e => setSide(e.target.value as Side)}>
+                <option value="GROOM">צד חתן</option><option value="BRIDE">צד כלה</option>
+              </select>
+              <select className="input" value={group} onChange={e => setGroup(e.target.value as GuestGroup)}>
+                <option value="FAMILY">משפחה</option><option value="FRIENDS">חברים</option>
+                <option value="WORK">עבודה</option><option value="ARMY">צבא</option><option value="OTHER">אחר</option>
+              </select>
+            </div>
+            <textarea className="input" rows={10} placeholder={"שיר טוביאנה\nעומרי אביב\nאושר נעים\n..."}
+              value={text} onChange={e => setText(e.target.value)}
+              style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: '0.875rem', lineHeight: 1.7 }} />
+            {names.length > 0 && (
+              <p style={{ fontSize: '0.78rem', color: 'var(--gold)', marginTop: '0.5rem', fontWeight: 600 }}>
+                {names.length} שמות זוהו
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+              <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>ביטול</button>
+              <button className="btn btn-gold" style={{ flex: 2 }} onClick={importAll} disabled={names.length === 0}>
+                <ListPlus size={15} /> ייבא {names.length > 0 ? names.length : ''} מוזמנים
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}
+
 export default function GuestsPage() {
   const [guests, setGuests] = useState<Guest[]>([])
   const [tab, setTab] = useState<GuestGroup | 'ALL'>('ALL')
   const [rsvpFilter, setRsvpFilter] = useState<RsvpStatus | 'ALL'>('ALL')
   const [search, setSearch] = useState('')
   const [showAdd, setShowAdd] = useState(false)
+  const [showBulk, setShowBulk] = useState(false)
 
   const load = useCallback(() => setGuests(guestStore.getAll()), [])
   useEffect(() => { load() }, [load])
@@ -112,6 +180,7 @@ export default function GuestsPage() {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-outline" onClick={exportCSV}><Download size={15} /></button>
+          <button className="btn btn-outline" onClick={() => setShowBulk(true)}><ListPlus size={15} /> ייבוא</button>
           <button className="btn btn-gold" onClick={() => setShowAdd(true)}><UserPlus size={15} /> הוסף</button>
         </div>
       </div>
@@ -194,6 +263,7 @@ export default function GuestsPage() {
       </div>
 
       <AddDrawer open={showAdd} onClose={() => setShowAdd(false)} onSave={() => { load(); setShowAdd(false) }} />
+      <BulkImportDrawer open={showBulk} onClose={() => setShowBulk(false)} onSave={() => { load(); setShowBulk(false) }} />
     </div>
   )
 }
