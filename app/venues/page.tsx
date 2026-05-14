@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Star, Phone, MapPin } from 'lucide-react'
 import { venueStore, formatILS } from '@/lib/store'
 import type { Venue, VenueStatus } from '@/lib/types'
+import ItemMediaDrawer from '@/components/ui/ItemMediaDrawer'
 
 const STATUS: Record<VenueStatus, { label: string; cls: string }> = {
   INTERESTED: { label: 'מעניין',  cls: 'chip chip-pending'  },
@@ -135,7 +136,10 @@ export default function VenuesPage() {
                 ))}
               </div>
               {v.notes && <div style={{ marginTop: '0.6rem', fontSize: '0.78rem', color: 'var(--gray-muted)', fontStyle: 'italic' }}>{v.notes}</div>}
-              <button onClick={() => del(v.id)} style={{ marginTop: '0.5rem', background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>מחיקה</button>
+              <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <ItemMediaDrawer entityId={v.id} entityName={v.name} entityType="venue" />
+                <button onClick={() => del(v.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>מחיקה</button>
+              </div>
             </motion.div>
           ))}
         </div>

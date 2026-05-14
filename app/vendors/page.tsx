@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Star, Phone, MessageCircle } from 'lucide-react'
 import { vendorStore, buildWhatsAppLink, formatILS } from '@/lib/store'
+import ItemMediaDrawer from '@/components/ui/ItemMediaDrawer'
 import type { Vendor, VendorCategory, VendorStatus } from '@/lib/types'
 
 const CATS: { key: VendorCategory | 'ALL'; label: string }[] = [
@@ -173,9 +174,10 @@ export default function VendorsPage() {
 
               {v.notes && <div style={{ marginTop: '0.6rem', fontSize: '0.78rem', color: 'var(--gray-muted)', fontStyle: 'italic' }}>{v.notes}</div>}
 
-              <button onClick={() => del(v.id)} style={{ marginTop: '0.5rem', background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>
-                מחיקה
-              </button>
+              <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <ItemMediaDrawer entityId={v.id} entityName={v.name} entityType="vendor" />
+                <button onClick={() => del(v.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>מחיקה</button>
+              </div>
             </motion.div>
           ))}
         </div>
