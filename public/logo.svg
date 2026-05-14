@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+  <defs>
+    <filter id="subtleShadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-color="#1A1A1A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <rect width="500" height="500" fill="#F8F5F0"/>
+  <circle cx="250" cy="250" r="222" fill="none" stroke="#C9A96E" stroke-width="1.5"/>
+  <circle cx="250" cy="250" r="214" fill="none" stroke="#C9A96E" stroke-width="0.6" opacity="0.4"/>
+  <polygon points="250,22 254.5,28 250,34 245.5,28" fill="#C9A96E"/>
+  <polygon points="466,250 472,254.5 466,259 460,254.5" fill="#C9A96E"/>
+  <polygon points="250,466 254.5,472 250,478 245.5,472" fill="#C9A96E"/>
+  <polygon points="34,250 40,254.5 34,259 28,254.5" fill="#C9A96E"/>
+  <g filter="url(#subtleShadow)">
+    <text x="170" y="215" font-family="'Cormorant Garamond', Georgia, serif" font-size="120" font-style="italic" fill="#1A1A1A" text-anchor="middle">H</text>
+    <text x="330" y="215" font-family="'Cormorant Garamond', Georgia, serif" font-size="120" font-style="italic" fill="#1A1A1A" text-anchor="middle">S</text>
+  </g>
+  <text x="250" y="190" font-family="'Cormorant Garamond', Georgia, serif" font-size="44" font-style="italic" fill="#C9A96E" text-anchor="middle">&amp;</text>
+  <line x1="82" y1="250" x2="180" y2="250" stroke="#C9A96E" stroke-width="0.75"/>
+  <polygon points="180,247 184,250 180,253 176,250" fill="#C9A96E"/>
+  <polygon points="250,247 253.5,250 250,253 246.5,250" fill="#C9A96E"/>
+  <polygon points="320,247 324,250 320,253 316,250" fill="#C9A96E"/>
+  <line x1="320" y1="250" x2="418" y2="250" stroke="#C9A96E" stroke-width="0.75"/>
+  <text x="250" y="297" font-family="'Cormorant Garamond', Georgia, serif" font-size="16" fill="#C9A96E" letter-spacing="4" text-anchor="middle">HAGAY  ·  SALOME</text>
+  <line x1="140" y1="313" x2="360" y2="313" stroke="#C9A96E" stroke-width="0.6" opacity="0.6"/>
+  <text x="250" y="336" font-family="Georgia, serif" font-size="11" fill="#AAAAAA" letter-spacing="5" text-anchor="middle">EST · MMXXVI</text>
+  <circle cx="244" cy="415" r="13" fill="none" stroke="#C9A96E" stroke-width="1.3"/>
+  <circle cx="258" cy="415" r="13" fill="none" stroke="#C9A96E" stroke-width="1.3"/>
+</svg>

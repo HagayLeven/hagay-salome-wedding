@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Guest {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  side      String   @default("groom")
+  group     String   @default("friends")
+  rsvp      String   @default("pending")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vendor {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  contactName String?
+  phone       String?
+  email       String?
+  priceQuote  Float?
+  notes       String?
+  rating      Int?
+  status      String   @default("searching")
+  media       Media[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Venue {
+  id          String   @id @default(cuid())
+  name        String
+  location    String?
+  capacity    Int?
+  priceQuote  Float?
+  contactName String?
+  phone       String?
+  notes       String?
+  rating      Int?
+  status      String   @default("interested")
+  media       Media[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AttireItem {
+  id         String   @id @default(cuid())
+  category   String   @default("dress")
+  name       String
+  storeName  String?
+  priceQuote Float?
+  notes      String?
+  rating     Int?
+  status     String   @default("option")
+  media      Media[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model BudgetConfig {
+  id          String   @id @default("singleton")
+  totalBudget Float    @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  category    String
+  description String
+  amount      Float
+  isPaid      Boolean  @default(false)
+  date        DateTime @default(now())
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Media {
+  id           String      @id @default(cuid())
+  url          String
+  type         String      @default("image")
+  caption      String?
+  vendorId     String?
+  vendor       Vendor?     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  venueId      String?
+  venue        Venue?      @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  attireItemId String?
+  attireItem   AttireItem? @relation(fields: [attireItemId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+}
+
+model Task {
+  id        String    @id @default(cuid())
+  title     String
+  dueDate   DateTime?
+  completed Boolean   @default(false)
+  category  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
