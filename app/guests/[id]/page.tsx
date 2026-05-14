@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Phone, ArrowRight, Check, MessageCircle, Trash2 } from 'lucide-react'
+import { Phone, ArrowRight, Check, MessageCircle, Trash2, Edit2 } from 'lucide-react'
 import { guestStore, buildWhatsAppLink, settingsStore, formatDate } from '@/lib/store'
 import type { Guest, RsvpStatus } from '@/lib/types'
 
@@ -110,18 +110,75 @@ export default function GuestPage() {
 
       {/* Hero */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-        className="card-lg" style={{ background: 'linear-gradient(135deg, #FDF6EC, #F8F5F0)', padding: '2rem 1.5rem', textAlign: 'center', marginBottom: '1.1rem' }}>
+        className="card-lg" style={{ background: 'linear-gradient(135deg, #FDF6EC, #F8F5F0)', padding: '2rem 1.5rem', textAlign: 'center', marginBottom: '1.1rem', position: 'relative' }}>
+
+        {/* Edit toggle */}
+        <button onClick={() => { if (editing) saveEdit(); else { setForm(guest); setEditing(true) } }}
+          style={{ position: 'absolute', top: 14, left: 14, background: editing ? 'var(--gold)' : 'rgba(255,255,255,.8)',
+            border: `1px solid ${editing ? 'var(--gold)' : 'var(--border)'}`, borderRadius: 8, padding: '5px 8px',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem',
+            color: editing ? 'white' : 'var(--gray-md)', fontWeight: 600 }}>
+          <Edit2 size={13} /> {editing ? 'שמור' : 'עריכה'}
+        </button>
+
         <div className="avatar avatar-xl" style={{ margin: '0 auto 1rem' }}>{initials(guest.name)}</div>
-        <h1 className="font-display" style={{ fontSize: '1.9rem', color: 'var(--charcoal)', marginBottom: 8 }}>{guest.name}</h1>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <span className="chip chip-muted" style={{ background: 'rgba(255,255,255,.7)', color: 'var(--gray-md)', border: '1px solid var(--border)' }}>
-            {groupLabels[guest.group]}
-          </span>
-          <span className="chip chip-muted" style={{ background: 'rgba(255,255,255,.7)', color: 'var(--gray-md)', border: '1px solid var(--border)' }}>
-            {guest.side === 'GROOM' ? 'צד חתן' : 'צד כלה'}
-          </span>
-        </div>
-        {guest.note && <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--gray-md)', fontStyle: 'italic' }}>{guest.note}</p>}
+
+        {editing ? (
+          <input className="input" value={form.name || ''} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.85rem', maxWidth: 260, margin: '0 auto 0.85rem' }} />
+        ) : (
+          <h1 className="font-display" style={{ fontSize: '1.9rem', color: 'var(--charcoal)', marginBottom: 8 }}>{guest.name}</h1>
+        )}
+
+        {editing ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', alignItems: 'center' }}>
+            {/* Side toggle */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              {(['GROOM', 'BRIDE'] as const).map(s => (
+                <button key={s} onClick={() => setForm(f => ({ ...f, side: s }))} className="btn"
+                  style={{ fontSize: '0.8rem', padding: '5px 16px',
+                    background: (form.side || guest.side) === s ? (s === 'GROOM' ? '#6B9FD4' : '#C9A96E') : 'white',
+                    color: (form.side || guest.side) === s ? 'white' : 'var(--gray-md)',
+                    border: `1.5px solid ${(form.side || guest.side) === s ? 'transparent' : 'var(--border)'}` }}>
+                  {s === 'GROOM' ? 'צד חתן' : 'צד כלה'}
+                </button>
+              ))}
+            </div>
+            {/* Group */}
+            <select className="input" value={form.group || guest.group} onChange={e => setForm(f => ({ ...f, group: e.target.value as Guest['group'] }))}
+              style={{ maxWidth: 180, textAlign: 'center' }}>
+              <option value="FAMILY">משפחה</option>
+              <option value="FRIENDS">חברים</option>
+              <option value="WORK">עבודה</option>
+              <option value="ARMY">צבא</option>
+              <option value="OTHER">אחר</option>
+            </select>
+            {/* Phone */}
+            <input className="input" placeholder="טלפון" value={form.phone || ''} type="tel"
+              onChange={e => setForm(f => ({ ...f, phone: e.target.value, whatsapp: e.target.value }))}
+              style={{ maxWidth: 200, textAlign: 'center' }} />
+            {/* Note */}
+            <input className="input" placeholder="הערה" value={form.note || ''}
+              onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
+              style={{ maxWidth: 260, textAlign: 'center' }} />
+            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+              <button className="btn btn-outline" onClick={() => { setEditing(false); setForm(guest) }}>ביטול</button>
+              <button className="btn btn-gold" onClick={saveEdit}>שמור</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <span className="chip chip-muted" style={{ background: 'rgba(255,255,255,.7)', color: 'var(--gray-md)', border: '1px solid var(--border)' }}>
+                {groupLabels[guest.group]}
+              </span>
+              <span className="chip chip-muted" style={{ background: 'rgba(255,255,255,.7)', color: 'var(--gray-md)', border: '1px solid var(--border)' }}>
+                {guest.side === 'GROOM' ? 'צד חתן' : 'צד כלה'}
+              </span>
+            </div>
+            {guest.note && <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--gray-md)', fontStyle: 'italic' }}>{guest.note}</p>}
+          </>
+        )}
       </motion.div>
 
       {/* Contact */}
