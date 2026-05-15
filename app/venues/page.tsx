@@ -5,6 +5,8 @@ import { Plus, Star, Phone, MapPin } from 'lucide-react'
 import { venueStore, formatILS } from '@/lib/store'
 import type { Venue, VenueStatus } from '@/lib/types'
 import ItemMediaDrawer from '@/components/ui/ItemMediaDrawer'
+import QuotesSection from '@/components/ui/QuotesSection'
+import PriceBadge from '@/components/ui/PriceBadge'
 
 const STATUS: Record<VenueStatus, { label: string; cls: string }> = {
   INTERESTED: { label: 'מעניין',  cls: 'chip chip-pending'  },
@@ -111,7 +113,7 @@ export default function VenuesPage() {
                   <div style={{ marginTop: 6, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                     <Stars rating={v.rating} onChange={r => updateRating(v.id, r)} />
                     {v.capacity && <span style={{ fontSize: '0.78rem', color: 'var(--gray-md)' }}>{v.capacity} אורחים</span>}
-                    {v.pricePerPerson && <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--charcoal)' }}>{formatILS(v.pricePerPerson)} / אורח</span>}
+                    <PriceBadge entityId={v.id} entityType="venue" />
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
@@ -140,6 +142,8 @@ export default function VenuesPage() {
                 <ItemMediaDrawer entityId={v.id} entityName={v.name} entityType="venue" />
                 <button onClick={() => del(v.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>מחיקה</button>
               </div>
+
+              <QuotesSection entityId={v.id} entityType="venue" entityName={v.name} />
             </motion.div>
           ))}
         </div>

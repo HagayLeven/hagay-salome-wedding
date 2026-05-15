@@ -16,8 +16,13 @@ const CIRC_RING = 2 * Math.PI * R_RING
 
 export default function SplashScreen() {
   const [show, setShow] = useState(true)
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   useEffect(() => {
+    if (prefersReducedMotion) {
+      setShow(false)
+      return
+    }
     const t = setTimeout(() => setShow(false), 3200)
     // Haptic on phase 4 (1800ms)
     const h = setTimeout(() => {
@@ -26,7 +31,7 @@ export default function SplashScreen() {
       }
     }, 1800)
     return () => { clearTimeout(t); clearTimeout(h) }
-  }, [])
+  }, [prefersReducedMotion])
 
   return (
     <AnimatePresence>

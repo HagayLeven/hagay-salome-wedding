@@ -186,7 +186,7 @@ export default function GuestsPage() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.6rem', marginBottom: '1.1rem' }}>
+      <div role="region" aria-label="סיכום מוזמנים" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.6rem', marginBottom: '1.1rem' }}>
         {[{ label: 'סה״כ', value: total, c: 'var(--charcoal)' }, { label: 'אישרו', value: confirmed, c: '#2D7A55' },
           { label: 'ממתינים', value: pending, c: '#9A6020' }, { label: 'סירבו', value: declined, c: '#923333' }].map(s => (
           <div key={s.label} className="card" style={{ padding: '0.85rem 0.5rem', textAlign: 'center' }}>
@@ -199,7 +199,8 @@ export default function GuestsPage() {
       {/* Search */}
       <div style={{ position: 'relative', marginBottom: '0.85rem' }}>
         <Search size={16} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-muted)' }} />
-        <input className="input" style={{ paddingRight: 38 }} placeholder="חיפוש לפי שם או טלפון..."
+        <label className="sr-only" htmlFor="guest-search">חיפוש מוזמנים</label>
+        <input id="guest-search" className="input" style={{ paddingRight: 38 }} placeholder="חיפוש לפי שם או טלפון..."
           value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
@@ -241,7 +242,9 @@ export default function GuestsPage() {
               <motion.div key={g.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(i, 6) * 0.05 }}
                 exit={{ opacity: 0, height: 0 }}>
-                <Link href={`/guests/${g.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.85rem',
+                <Link href={`/guests/${g.id}`}
+                  aria-label={`אורח: ${g.name}, סטטוס: ${rsvpLabel[g.rsvpStatus]}, קבוצה: ${GROUPS.find(x=>x.key===g.group)?.label}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.85rem',
                   padding: '0.85rem 1.1rem', borderBottom: '1px solid var(--border)',
                   textDecoration: 'none', color: 'inherit', transition: 'background .12s' }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--gold-pale)')}

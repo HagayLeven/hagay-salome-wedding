@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Star } from 'lucide-react'
 import { attireStore, formatILS } from '@/lib/store'
 import ItemMediaDrawer from '@/components/ui/ItemMediaDrawer'
+import QuotesSection from '@/components/ui/QuotesSection'
+import PriceBadge from '@/components/ui/PriceBadge'
 import type { AttireItem, AttireCategory, AttireStatus } from '@/lib/types'
 
 const CATS: { key: AttireCategory | 'ALL'; label: string; icon: string }[] = [
@@ -122,7 +124,7 @@ export default function AttirePage() {
                   {item.store && <div style={{ fontSize: '0.72rem', color: 'var(--gray-muted)' }}>{item.store}</div>}
                   <div style={{ marginTop: 6, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                     <Stars rating={item.rating} onChange={r => updateRating(item.id, r)} />
-                    {item.price && <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--charcoal)' }}>{formatILS(item.price)}</span>}
+                    <PriceBadge entityId={item.id} entityType="attire" />
                   </div>
                 </div>
                 <span className={`chip ${item.status === 'READY' ? 'chip-confirmed' : item.status === 'ORDERED' ? 'chip-sent' : 'chip-pending'}`}>
@@ -144,6 +146,8 @@ export default function AttirePage() {
                 <ItemMediaDrawer entityId={item.id} entityName={item.name} entityType="attire" />
                 <button onClick={() => del(item.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>מחיקה</button>
               </div>
+
+              <QuotesSection entityId={item.id} entityType="attire" entityName={item.name} />
             </motion.div>
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { Guest, Vendor, Venue, AttireItem, Expense, Task, MediaItem, Settings, ActivityItem, WeddingUser, UserPermissions } from './types'
+import { Guest, Vendor, Venue, AttireItem, Expense, Task, MediaItem, Settings, ActivityItem, WeddingUser, UserPermissions, Quote, Installment } from './types'
 
 const KEYS = {
   guests: 'wp_guests',
@@ -11,6 +11,7 @@ const KEYS = {
   settings: 'wp_settings',
   activity: 'wp_activity',
   users: 'wp_users',
+  quotes: 'wp_quotes',
 }
 
 function uid() {
@@ -212,6 +213,33 @@ export const userStore = {
   },
   DEFAULT_PERMISSIONS,
   FAMILY_PERMISSIONS,
+}
+
+// ── Quotes ──────────────────────────────────────────────
+export const quoteStore = {
+  getAll: () => get<Quote[]>(KEYS.quotes, []),
+  getByEntity: (entityType: Quote['entityType'], entityId: string) =>
+    get<Quote[]>(KEYS.quotes, []).filter(q => q.entityType === entityType && q.entityId === entityId),
+  create: (data: Omit<Quote, 'id' | 'createdAt'>) => {
+    const q: Quote = { ...data, id: uid(), createdAt: new Date().toISOString() }
+    set(KEYS.quotes, [q, ...get<Quote[]>(KEYS.quotes, [])])
+    return q
+  },
+  update: (id: string, data: Partial<Quote>) => {
+    set(KEYS.quotes, get<Quote[]>(KEYS.quotes, []).map(q => q.id === id ? { ...q, ...data } : q))
+  },
+  delete: (id: string) => {
+    set(KEYS.quotes, get<Quote[]>(KEYS.quotes, []).filter(q => q.id !== id))
+  },
+  setSelected: (id: string, entityType: Quote['entityType'], entityId: string) => {
+    const all = get<Quote[]>(KEYS.quotes, []).map(q => {
+      if (q.entityType === entityType && q.entityId === entityId) {
+        return { ...q, isSelected: q.id === id }
+      }
+      return q
+    })
+    set(KEYS.quotes, all)
+  },
 }
 
 // ── Utils ──────────────────────────────────────────────

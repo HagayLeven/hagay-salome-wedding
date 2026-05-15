@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Star, Phone, MessageCircle } from 'lucide-react'
 import { vendorStore, buildWhatsAppLink, formatILS } from '@/lib/store'
 import ItemMediaDrawer from '@/components/ui/ItemMediaDrawer'
+import QuotesSection from '@/components/ui/QuotesSection'
+import PriceBadge from '@/components/ui/PriceBadge'
 import type { Vendor, VendorCategory, VendorStatus } from '@/lib/types'
 
 const CATS: { key: VendorCategory | 'ALL'; label: string }[] = [
@@ -139,7 +141,7 @@ export default function VendorsPage() {
                     </div>
                     <div style={{ marginTop: 6, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                       <Stars rating={v.rating} onChange={r => updateRating(v.id, r)} />
-                      {v.priceQuote && <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--charcoal)' }}>{formatILS(v.priceQuote)}</span>}
+                      <PriceBadge entityId={v.id} entityType="vendor" />
                     </div>
                   </div>
                 </div>
@@ -178,6 +180,8 @@ export default function VendorsPage() {
                 <ItemMediaDrawer entityId={v.id} entityName={v.name} entityType="vendor" />
                 <button onClick={() => del(v.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>מחיקה</button>
               </div>
+
+              <QuotesSection entityId={v.id} entityType="vendor" entityName={v.name} />
             </motion.div>
           ))}
         </div>

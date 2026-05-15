@@ -5,7 +5,7 @@ import { UserPlus, Handshake, Receipt, CheckSquare } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import CircularRing from '@/components/ui/CircularRing'
-import { guestStore, vendorStore, taskStore, expenseStore, settingsStore, activityStore, getDaysToWedding, formatILS, formatDate } from '@/lib/store'
+import { guestStore, vendorStore, venueStore, attireStore, taskStore, expenseStore, settingsStore, activityStore, quoteStore, getDaysToWedding, formatILS, formatDate } from '@/lib/store'
 import type { Settings } from '@/lib/types'
 
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }
@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [stats, setStats] = useState({ total: 0, confirmed: 0, vendorTotal: 0, vendorSigned: 0, taskTotal: 0, taskDone: 0, budgetPct: 0, budgetSpent: 0, budgetTotal: 0 })
   const [activity, setActivity] = useState<{ id: string; description: string; createdAt: string }[]>([])
+  const [pendingDecision, setPendingDecision] = useState<{ id: string; name: string; type: string; href: string; quoteCount: number }[]>([])
 
   useEffect(() => {
     const s = settingsStore.get()
@@ -38,6 +39,29 @@ export default function Dashboard() {
       budgetTotal: s.totalBudget,
     })
     setActivity(activityStore.getAll())
+
+    // Pending decision: entities with no selected quote
+    const allQuotes = quoteStore.getAll()
+    const pending: typeof pendingDecision = []
+    vendorStore.getAll().forEach(v => {
+      const qs = allQuotes.filter(q => q.entityType === 'vendor' && q.entityId === v.id)
+      if (!qs.some(q => q.isSelected)) {
+        pending.push({ id: v.id, name: v.name, type: 'ספק', href: '/vendors', quoteCount: qs.length })
+      }
+    })
+    venueStore.getAll().forEach(v => {
+      const qs = allQuotes.filter(q => q.entityType === 'venue' && q.entityId === v.id)
+      if (!qs.some(q => q.isSelected)) {
+        pending.push({ id: v.id, name: v.name, type: 'אולם', href: '/venues', quoteCount: qs.length })
+      }
+    })
+    attireStore.getAll().forEach(a => {
+      const qs = allQuotes.filter(q => q.entityType === 'attire' && q.entityId === a.id)
+      if (!qs.some(q => q.isSelected)) {
+        pending.push({ id: a.id, name: a.name, type: 'ביגוד', href: '/attire', quoteCount: qs.length })
+      }
+    })
+    setPendingDecision(pending)
     setReady(true)
   }, [])
 
@@ -62,7 +86,9 @@ export default function Dashboard() {
           border: '3px solid var(--gold)', boxShadow: '0 4px 20px rgba(201,169,110,.35)', margin: '0 auto 1rem' }}>
           <Image src="/couple.jpg" alt="חגי וסלומה" fill style={{ objectFit: 'cover', objectPosition: 'center top' }} />
         </div>
-        <CircularRing value={365 - days} max={365} size="xl" centerText={String(days)} centerSub="ימים" />
+        <div role="img" aria-label={`נותרו ${days} ימים לחתונה`}>
+          <CircularRing value={365 - days} max={365} size="xl" centerText={String(days)} centerSub="ימים" />
+        </div>
         <div style={{ marginTop: '1rem' }}>
           <div className="font-display" style={{ fontSize: '1.7rem', color: 'var(--charcoal)' }}>
             {settings?.groomName} &amp; {settings?.brideName}
@@ -77,12 +103,14 @@ export default function Dashboard() {
       <motion.div variants={fadeUp} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
         {[
           { label: 'מוזמנים', value: stats.confirmed, max: Math.max(stats.total, 1), sub: `${stats.confirmed}/${stats.total}` },
-          { label: 'תקציב', value: stats.budgetPct, max: 100, sub: `${stats.budgetPct}%`, color: ringColor },
+          { label: 'תקציב', value: stats.budgetPct, max: 100, sub: `${stats.budgetPct}%`, color: ringColor, ariaLabel: `נוצל ${stats.budgetPct} אחוז מהתקציב` },
           { label: 'ספקים', value: stats.vendorSigned, max: Math.max(stats.vendorTotal, 1), sub: `${stats.vendorSigned}/${stats.vendorTotal}` },
           { label: 'משימות', value: stats.taskDone, max: Math.max(stats.taskTotal, 1), sub: `${stats.taskDone}/${stats.taskTotal}` },
         ].map(s => (
           <div key={s.label} className="card" style={{ padding: '1rem 0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-            <CircularRing value={s.value} max={s.max} size="sm" centerText={s.sub} color={s.color} />
+            <div role="img" aria-label={'ariaLabel' in s ? s.ariaLabel : `${s.label}: ${s.sub}`}>
+              <CircularRing value={s.value} max={s.max} size="sm" centerText={s.sub} color={s.color} />
+            </div>
             <span className="label-caps">{s.label}</span>
           </div>
         ))}
@@ -141,6 +169,45 @@ export default function Dashboard() {
           </div>
         </motion.div>
       )}
+
+      {/* Pending decision widget */}
+      <motion.div variants={fadeUp} className="card" style={{ padding: '1.25rem' }}>
+        <div className="section-bar" style={{ marginBottom: '0.75rem' }}>
+          <div className="section-bar-title">
+            <div className="section-bar-accent" />
+            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>ממתין להחלטה</span>
+            {pendingDecision.length > 0 && (
+              <span style={{ marginRight: 6, background: 'var(--gold)', color: 'white', borderRadius: 9999, fontSize: '0.68rem', fontWeight: 700, padding: '1px 7px' }}>
+                {pendingDecision.length}
+              </span>
+            )}
+          </div>
+        </div>
+        {pendingDecision.length === 0 ? (
+          <div style={{ fontSize: '0.82rem', color: '#2D7A55', fontWeight: 600 }}>כל ההצעות נבחרו ✓</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {pendingDecision.slice(0, 5).map(item => (
+              <Link key={`${item.type}-${item.id}`} href={item.href}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.75rem',
+                  borderRadius: 8, background: 'var(--bg)', textDecoration: 'none', color: 'inherit' }}>
+                <div>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--charcoal)' }}>{item.name}</span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--gray-muted)', marginRight: 8 }}>{item.type}</span>
+                </div>
+                <span style={{ fontSize: '0.72rem', color: item.quoteCount > 0 ? 'var(--gold)' : 'var(--gray-muted)' }}>
+                  {item.quoteCount > 0 ? `${item.quoteCount} הצעות` : 'אין הצעות'}
+                </span>
+              </Link>
+            ))}
+            {pendingDecision.length > 5 && (
+              <span style={{ fontSize: '0.72rem', color: 'var(--gray-muted)', textAlign: 'center' }}>
+                ועוד {pendingDecision.length - 5} נוספים...
+              </span>
+            )}
+          </div>
+        )}
+      </motion.div>
 
       {/* Activity feed */}
       {activity.length > 0 && (

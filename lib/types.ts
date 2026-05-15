@@ -155,3 +155,27 @@ export interface WeddingUser {
   permissions: UserPermissions
   createdAt: string
 }
+
+export interface Installment {
+  id: string
+  label: string
+  amount: number
+  isPaid: boolean
+  paidAt?: string
+}
+
+export interface Quote {
+  id: string
+  entityType: 'vendor' | 'venue' | 'attire'
+  entityId: string
+  entityName?: string
+  title: string
+  amount: number
+  currency: string
+  isSelected: boolean
+  note?: string
+  receivedAt: string
+  validUntil?: string
+  installments?: Installment[]
+  createdAt: string
+}
