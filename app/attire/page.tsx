@@ -2,22 +2,12 @@
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Star } from 'lucide-react'
-import { attireStore, formatILS } from '@/lib/store'
+import { attireStore } from '@/lib/store'
 import ItemMediaDrawer from '@/components/ui/ItemMediaDrawer'
 import QuotesSection from '@/components/ui/QuotesSection'
 import PriceBadge from '@/components/ui/PriceBadge'
 import type { AttireItem, AttireCategory, AttireStatus } from '@/lib/types'
-
-const CATS: { key: AttireCategory | 'ALL'; label: string; icon: string }[] = [
-  { key: 'ALL', label: 'הכל', icon: '👗' },
-  { key: 'DRESS', label: 'שמלת כלה', icon: '👰' },
-  { key: 'SUIT', label: 'חליפת חתן', icon: '🤵' },
-  { key: 'VENUE_OUTFIT', label: 'בגדי אולם', icon: '✨' },
-  { key: 'PARTY_OUTFIT', label: 'בגדי מסיבה', icon: '🎉' },
-  { key: 'JEWELRY', label: 'תכשיטים', icon: '💍' },
-  { key: 'SHOES', label: 'נעליים', icon: '👠' },
-]
-const STATUS: Record<AttireStatus, string> = { BROWSING: 'עיון', TRYING: 'התנסות', ORDERED: 'הוזמן', READY: 'מוכן' }
+import { useLang } from '@/lib/lang-context'
 
 function Stars({ rating, onChange }: { rating?: number; onChange?: (r: number) => void }) {
   return (
@@ -33,6 +23,15 @@ function Stars({ rating, onChange }: { rating?: number; onChange?: (r: number) =
 }
 
 function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => void; onSave: () => void }) {
+  const { t } = useLang()
+  const CATS_ADD: { key: AttireCategory; label: string; icon: string }[] = [
+    { key: 'DRESS', label: t('dress'), icon: '👰' },
+    { key: 'SUIT', label: t('suit'), icon: '🤵' },
+    { key: 'VENUE_OUTFIT', label: t('venueOutfit'), icon: '✨' },
+    { key: 'PARTY_OUTFIT', label: t('partyOutfit'), icon: '🎉' },
+    { key: 'JEWELRY', label: t('jewelry'), icon: '💍' },
+    { key: 'SHOES', label: t('shoes'), icon: '👠' },
+  ]
   const [form, setForm] = useState({ name: '', category: 'DRESS' as AttireCategory, designer: '', store: '', price: '', notes: '' })
   const upd = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
   function save() {
@@ -52,20 +51,20 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white',
               borderRadius: '24px 24px 0 0', padding: '1.5rem 1.25rem 2rem', zIndex: 70, boxShadow: '0 -8px 40px rgba(0,0,0,.15)' }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 1.25rem' }} />
-            <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>הוספת פריט ביגוד</h3>
+            <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>{t('addAttireTitle')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <input className="input" placeholder="שם הפריט *" value={form.name} onChange={e => upd('name', e.target.value)} />
+              <input className="input" placeholder={`${t('itemName')} *`} value={form.name} onChange={e => upd('name', e.target.value)} />
               <select className="input" value={form.category} onChange={e => upd('category', e.target.value)}>
-                {CATS.filter(c => c.key !== 'ALL').map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                {CATS_ADD.map(c => <option key={c.key} value={c.key}>{c.icon} {c.label}</option>)}
               </select>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <input className="input" placeholder="מעצב/ת" value={form.designer} onChange={e => upd('designer', e.target.value)} />
-                <input className="input" placeholder="חנות" value={form.store} onChange={e => upd('store', e.target.value)} />
+                <input className="input" placeholder={t('designer')} value={form.designer} onChange={e => upd('designer', e.target.value)} />
+                <input className="input" placeholder={t('store')} value={form.store} onChange={e => upd('store', e.target.value)} />
               </div>
-              <input className="input" placeholder="מחיר ₪" type="number" value={form.price} onChange={e => upd('price', e.target.value)} />
+              <input className="input" placeholder={t('price')} type="number" value={form.price} onChange={e => upd('price', e.target.value)} />
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>ביטול</button>
-                <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>שמור</button>
+                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>{t('cancel')}</button>
+                <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>{t('save')}</button>
               </div>
             </div>
           </motion.div>
@@ -76,6 +75,24 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
 }
 
 export default function AttirePage() {
+  const { t } = useLang()
+
+  const CATS: { key: AttireCategory | 'ALL'; label: string; icon: string }[] = [
+    { key: 'ALL', label: t('all_'), icon: '👗' },
+    { key: 'DRESS', label: t('dress'), icon: '👰' },
+    { key: 'SUIT', label: t('suit'), icon: '🤵' },
+    { key: 'VENUE_OUTFIT', label: t('venueOutfit'), icon: '✨' },
+    { key: 'PARTY_OUTFIT', label: t('partyOutfit'), icon: '🎉' },
+    { key: 'JEWELRY', label: t('jewelry'), icon: '💍' },
+    { key: 'SHOES', label: t('shoes'), icon: '👠' },
+  ]
+  const STATUS: Record<AttireStatus, string> = {
+    BROWSING: t('status_browsing'),
+    TRYING: t('status_trying'),
+    ORDERED: t('status_ordered'),
+    READY: t('status_ready'),
+  }
+
   const [items, setItems] = useState<AttireItem[]>([])
   const [tab, setTab] = useState<AttireCategory | 'ALL'>('ALL')
   const [showAdd, setShowAdd] = useState(false)
@@ -87,13 +104,13 @@ export default function AttirePage() {
 
   function updateStatus(id: string, status: AttireStatus) { attireStore.update(id, { status }); load() }
   function updateRating(id: string, rating: number) { attireStore.update(id, { rating }); load() }
-  function del(id: string) { if (!confirm('למחוק פריט?')) return; attireStore.delete(id); load() }
+  function del(id: string) { if (!confirm(t('delete') + '?')) return; attireStore.delete(id); load() }
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>ביגוד</h1>
-        <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> הוסף</button>
+        <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>{t('attire')}</h1>
+        <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> {t('add')}</button>
       </div>
 
       <div className="tab-bar" style={{ marginBottom: '1.1rem' }}>
@@ -109,8 +126,8 @@ export default function AttirePage() {
 
       {visible.length === 0 ? (
         <div className="card empty-state">
-          <span style={{ fontSize: 48 }}>👗</span><h3>אין פריטים</h3><p>הוסף פריט ביגוד ראשון</p>
-          <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> הוסף פריט</button>
+          <span style={{ fontSize: 48 }}>👗</span><h3>{t('noAttire')}</h3><p>{t('addFirstAttire')}</p>
+          <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> {t('addAttireTitle')}</button>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '0.75rem' }}>
@@ -144,7 +161,7 @@ export default function AttirePage() {
               </div>
               <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <ItemMediaDrawer entityId={item.id} entityName={item.name} entityType="attire" />
-                <button onClick={() => del(item.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>מחיקה</button>
+                <button onClick={() => del(item.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>{t('delete')}</button>
               </div>
 
               <QuotesSection entityId={item.id} entityType="attire" entityName={item.name} />

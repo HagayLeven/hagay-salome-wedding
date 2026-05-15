@@ -2,25 +2,12 @@
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Star, Phone, MessageCircle } from 'lucide-react'
-import { vendorStore, buildWhatsAppLink, formatILS } from '@/lib/store'
+import { vendorStore, buildWhatsAppLink } from '@/lib/store'
 import ItemMediaDrawer from '@/components/ui/ItemMediaDrawer'
 import QuotesSection from '@/components/ui/QuotesSection'
 import PriceBadge from '@/components/ui/PriceBadge'
 import type { Vendor, VendorCategory, VendorStatus } from '@/lib/types'
-
-const CATS: { key: VendorCategory | 'ALL'; label: string }[] = [
-  { key: 'ALL', label: 'הכל' }, { key: 'PHOTOGRAPHER', label: 'צלם' }, { key: 'DJ', label: 'DJ' },
-  { key: 'CATERING', label: 'קייטרינג' }, { key: 'DESIGN', label: 'עיצוב' },
-  { key: 'BEAUTY', label: 'ספרות כלה' }, { key: 'RABBI', label: 'רב' }, { key: 'OTHER', label: 'אחר' },
-]
-const STATUS: Record<VendorStatus, { label: string; cls: string }> = {
-  SEARCHING: { label: 'בחיפוש', cls: 'chip chip-searching' },
-  MEETING:   { label: 'פגישה',  cls: 'chip chip-meeting' },
-  PROPOSAL:  { label: 'הצעה',   cls: 'chip chip-pending' },
-  SIGNED:    { label: 'חוזה',   cls: 'chip chip-signed' },
-  DEPOSIT:   { label: 'מקדמה',  cls: 'chip chip-deposit' },
-  PAID:      { label: 'שולם',   cls: 'chip chip-paid' },
-}
+import { useLang } from '@/lib/lang-context'
 
 function Stars({ rating, onChange }: { rating?: number; onChange?: (r: number) => void }) {
   return (
@@ -36,6 +23,12 @@ function Stars({ rating, onChange }: { rating?: number; onChange?: (r: number) =
 }
 
 function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => void; onSave: () => void }) {
+  const { t } = useLang()
+  const CATS_ADD: { key: VendorCategory; label: string }[] = [
+    { key: 'PHOTOGRAPHER', label: t('photographer') }, { key: 'DJ', label: t('dj') },
+    { key: 'CATERING', label: t('catering') }, { key: 'DESIGN', label: t('design') },
+    { key: 'BEAUTY', label: t('beauty') }, { key: 'RABBI', label: t('rabbi') }, { key: 'OTHER', label: t('other') },
+  ]
   const [form, setForm] = useState({ name: '', category: 'OTHER' as VendorCategory, phone: '', priceQuote: '', notes: '' })
   const upd = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
   function save() {
@@ -55,20 +48,20 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white',
               borderRadius: '24px 24px 0 0', padding: '1.5rem 1.25rem 2rem', zIndex: 70, boxShadow: '0 -8px 40px rgba(0,0,0,.15)' }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 1.25rem' }} />
-            <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>הוספת ספק</h3>
+            <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>{t('addVendorTitle')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <input className="input" placeholder="שם ספק *" value={form.name} onChange={e => upd('name', e.target.value)} />
+              <input className="input" placeholder={`${t('vendorName')} *`} value={form.name} onChange={e => upd('name', e.target.value)} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <select className="input" value={form.category} onChange={e => upd('category', e.target.value)}>
-                  {CATS.filter(c => c.key !== 'ALL').map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                  {CATS_ADD.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
                 </select>
-                <input className="input" placeholder="טלפון" type="tel" value={form.phone} onChange={e => upd('phone', e.target.value)} />
+                <input className="input" placeholder={t('phone')} type="tel" value={form.phone} onChange={e => upd('phone', e.target.value)} />
               </div>
-              <input className="input" placeholder="הצעת מחיר ₪" type="number" value={form.priceQuote} onChange={e => upd('priceQuote', e.target.value)} />
-              <textarea className="input" placeholder="הערות" value={form.notes} onChange={e => upd('notes', e.target.value)} style={{ minHeight: 72 }} />
+              <input className="input" placeholder={t('priceQuote')} type="number" value={form.priceQuote} onChange={e => upd('priceQuote', e.target.value)} />
+              <textarea className="input" placeholder={t('notes')} value={form.notes} onChange={e => upd('notes', e.target.value)} style={{ minHeight: 72 }} />
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>ביטול</button>
-                <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>שמור</button>
+                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>{t('cancel')}</button>
+                <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>{t('save')}</button>
               </div>
             </div>
           </motion.div>
@@ -79,6 +72,22 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
 }
 
 export default function VendorsPage() {
+  const { t } = useLang()
+
+  const CATS: { key: VendorCategory | 'ALL'; label: string }[] = [
+    { key: 'ALL', label: t('all_') }, { key: 'PHOTOGRAPHER', label: t('photographer') }, { key: 'DJ', label: t('dj') },
+    { key: 'CATERING', label: t('catering') }, { key: 'DESIGN', label: t('design') },
+    { key: 'BEAUTY', label: t('beauty') }, { key: 'RABBI', label: t('rabbi') }, { key: 'OTHER', label: t('other') },
+  ]
+  const STATUS: Record<VendorStatus, { label: string; cls: string }> = {
+    SEARCHING: { label: t('status_searching'), cls: 'chip chip-searching' },
+    MEETING:   { label: t('status_meeting'),   cls: 'chip chip-meeting' },
+    PROPOSAL:  { label: t('status_proposal'),  cls: 'chip chip-pending' },
+    SIGNED:    { label: t('status_signed'),    cls: 'chip chip-signed' },
+    DEPOSIT:   { label: t('status_deposit'),   cls: 'chip chip-deposit' },
+    PAID:      { label: t('status_paid'),      cls: 'chip chip-paid' },
+  }
+
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [tab, setTab] = useState<VendorCategory | 'ALL'>('ALL')
   const [showAdd, setShowAdd] = useState(false)
@@ -95,15 +104,15 @@ export default function VendorsPage() {
     vendorStore.update(id, { rating }); load()
   }
   function del(id: string) {
-    if (!confirm('למחוק ספק?')) return
+    if (!confirm(t('delete') + '?')) return
     vendorStore.delete(id); load()
   }
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>ספקים</h1>
-        <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> הוסף</button>
+        <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>{t('vendors')}</h1>
+        <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> {t('add')}</button>
       </div>
 
       <div className="tab-bar" style={{ marginBottom: '1.1rem' }}>
@@ -119,8 +128,8 @@ export default function VendorsPage() {
 
       {visible.length === 0 ? (
         <div className="card empty-state">
-          <Plus size={48} /><h3>אין ספקים</h3><p>הוסף את הספק הראשון</p>
-          <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> הוסף ספק</button>
+          <Plus size={48} /><h3>{t('noVendors')}</h3><p>{t('addFirstVendor')}</p>
+          <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> {t('addVendor')}</button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -178,7 +187,7 @@ export default function VendorsPage() {
 
               <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <ItemMediaDrawer entityId={v.id} entityName={v.name} entityType="vendor" />
-                <button onClick={() => del(v.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>מחיקה</button>
+                <button onClick={() => del(v.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>{t('delete')}</button>
               </div>
 
               <QuotesSection entityId={v.id} entityType="vendor" entityName={v.name} />

@@ -1,36 +1,24 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, Edit2, Check, X } from 'lucide-react'
+import { Plus, Trash2, Edit2, Check } from 'lucide-react'
 import { userStore } from '@/lib/store'
 import type { WeddingUser, UserSide, PermissionLevel, UserPermissions } from '@/lib/types'
+import { useLang } from '@/lib/lang-context'
 
-const SIDE_LABEL: Record<UserSide, string> = { GROOM: 'צד חתן', BRIDE: 'צד כלה' }
 const SIDE_COLOR: Record<UserSide, string> = { GROOM: '#6B9FD4', BRIDE: '#C9A96E' }
-
-const MODULES: { key: keyof UserPermissions; label: string }[] = [
-  { key: 'guests',  label: 'מוזמנים' },
-  { key: 'vendors', label: 'ספקים' },
-  { key: 'venues',  label: 'אולמות' },
-  { key: 'attire',  label: 'ביגוד' },
-  { key: 'budget',  label: 'תקציב' },
-  { key: 'tasks',   label: 'משימות' },
-  { key: 'gallery', label: 'גלריה' },
-]
-
-const PERM_OPTS: { value: PermissionLevel; label: string; color: string }[] = [
-  { value: 'edit',   label: 'עריכה',  color: '#4CAF82' },
-  { value: 'view',   label: 'צפייה',  color: '#6B9FD4' },
-  { value: 'hidden', label: 'מוסתר', color: '#CCC' },
-]
-
 const AVATAR_COLORS = ['#C9A96E','#6B9FD4','#4CAF82','#E05C5C','#9B59B6','#F0A04B']
 
 function initials(name: string) {
   return name.trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 }
 
-function PermToggle({ value, onChange }: { value: PermissionLevel; onChange: (v: PermissionLevel) => void }) {
+function PermToggle({ value, onChange, labels }: { value: PermissionLevel; onChange: (v: PermissionLevel) => void; labels: { edit: string; view: string; hidden: string } }) {
+  const PERM_OPTS: { value: PermissionLevel; label: string; color: string }[] = [
+    { value: 'edit',   label: labels.edit,   color: '#4CAF82' },
+    { value: 'view',   label: labels.view,   color: '#6B9FD4' },
+    { value: 'hidden', label: labels.hidden, color: '#CCC' },
+  ]
   const idx = PERM_OPTS.findIndex(o => o.value === value)
   const opt = PERM_OPTS[idx]
   return (
@@ -53,10 +41,24 @@ function UserDrawer({
 }: {
   open: boolean; onClose: () => void; onSave: () => void; editing?: WeddingUser | null
 }) {
+  const { t } = useLang()
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [side, setSide] = useState<UserSide>('GROOM')
   const [perms, setPerms] = useState<UserPermissions>({ ...userStore.DEFAULT_PERMISSIONS })
+
+  const MODULES: { key: keyof UserPermissions; label: string }[] = [
+    { key: 'guests',  label: t('guests') },
+    { key: 'vendors', label: t('vendors') },
+    { key: 'venues',  label: t('venues') },
+    { key: 'attire',  label: t('attire') },
+    { key: 'budget',  label: t('budget') },
+    { key: 'tasks',   label: t('tasks') },
+    { key: 'gallery', label: t('gallery') },
+  ]
+
+  const SIDE_LABEL: Record<UserSide, string> = { GROOM: t('groomSide'), BRIDE: t('brideSide') }
+  const permLabels = { edit: t('perm_edit'), view: t('perm_view'), hidden: t('perm_hidden') }
 
   useEffect(() => {
     if (editing) {
@@ -94,12 +96,12 @@ function UserDrawer({
               zIndex: 70, boxShadow: '0 -8px 40px rgba(0,0,0,.15)', maxHeight: '90vh', overflowY: 'auto',
             }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 1.25rem' }} />
-            <h3 style={{ fontWeight: 700, marginBottom: '1.25rem' }}>{editing ? 'עריכת משתמש' : 'הוספת משתמש'}</h3>
+            <h3 style={{ fontWeight: 700, marginBottom: '1.25rem' }}>{editing ? t('editUser') : t('addUser')}</h3>
 
             {/* Name + Role */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-              <input className="input" placeholder="שם מלא *" value={name} onChange={e => setName(e.target.value)} />
-              <input className="input" placeholder="תפקיד (אמא, אבא…)" value={role} onChange={e => setRole(e.target.value)} />
+              <input className="input" placeholder={`${t('userName')} *`} value={name} onChange={e => setName(e.target.value)} />
+              <input className="input" placeholder={t('userRole')} value={role} onChange={e => setRole(e.target.value)} />
             </div>
 
             {/* Side */}
@@ -119,28 +121,28 @@ function UserDrawer({
 
             {/* Presets */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--gray-muted)', alignSelf: 'center' }}>פרסט מהיר:</span>
-              <button className="btn btn-ghost" style={{ fontSize: '0.75rem' }} onClick={setOwnerPreset}>בעלים</button>
-              <button className="btn btn-ghost" style={{ fontSize: '0.75rem' }} onClick={setFamilyPreset}>משפחה</button>
+              <span style={{ fontSize: '0.8rem', color: 'var(--gray-muted)', alignSelf: 'center' }}>{t('quickPreset')}</span>
+              <button className="btn btn-ghost" style={{ fontSize: '0.75rem' }} onClick={setOwnerPreset}>{t('owner')}</button>
+              <button className="btn btn-ghost" style={{ fontSize: '0.75rem' }} onClick={setFamilyPreset}>{t('familyPreset')}</button>
             </div>
 
             {/* Permissions */}
             <div style={{ background: 'var(--bg)', borderRadius: 12, overflow: 'hidden', marginBottom: '1.25rem' }}>
               <div style={{ padding: '0.6rem 1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--gray-muted)', fontWeight: 600 }}>
-                <span>מודול</span>
-                <span>הרשאה (לחץ לשינוי)</span>
+                <span>{t('module')}</span>
+                <span>{t('permission')}</span>
               </div>
               {MODULES.map(m => (
                 <div key={m.key} style={{ padding: '0.55rem 1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.85rem', color: 'var(--charcoal)' }}>{m.label}</span>
-                  <PermToggle value={perms[m.key]} onChange={v => setPerms(p => ({ ...p, [m.key]: v }))} />
+                  <PermToggle value={perms[m.key]} onChange={v => setPerms(p => ({ ...p, [m.key]: v }))} labels={permLabels} />
                 </div>
               ))}
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>ביטול</button>
-              <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>שמור</button>
+              <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>{t('cancel')}</button>
+              <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>{t('save')}</button>
             </div>
           </motion.div>
         </>
@@ -150,15 +152,27 @@ function UserDrawer({
 }
 
 export default function UsersPage() {
+  const { t } = useLang()
   const [users, setUsers] = useState<WeddingUser[]>([])
   const [showAdd, setShowAdd] = useState(false)
   const [editing, setEditing] = useState<WeddingUser | null>(null)
+
+  const SIDE_LABEL: Record<UserSide, string> = { GROOM: t('groomSide'), BRIDE: t('brideSide') }
+  const MODULES_LABELS: Record<string, string> = {
+    guests: t('guests'), vendors: t('vendors'), venues: t('venues'),
+    attire: t('attire'), budget: t('budget'), tasks: t('tasks'), gallery: t('gallery'),
+  }
+  const PERM_OPTS: { value: PermissionLevel; label: string; color: string }[] = [
+    { value: 'edit',   label: t('perm_edit'),   color: '#4CAF82' },
+    { value: 'view',   label: t('perm_view'),   color: '#6B9FD4' },
+    { value: 'hidden', label: t('perm_hidden'), color: '#CCC' },
+  ]
 
   const load = useCallback(() => setUsers(userStore.getAll()), [])
   useEffect(() => { load() }, [load])
 
   function del(id: string) {
-    if (!confirm('למחוק משתמש?')) return
+    if (!confirm(t('delete') + '?')) return
     userStore.delete(id); load()
   }
 
@@ -169,18 +183,18 @@ export default function UsersPage() {
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
-          <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>משתמשים</h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--gray-muted)', marginTop: 4 }}>ניהול גישה לבני המשפחה</p>
+          <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>{t('users')}</h1>
+          <p style={{ fontSize: '0.8rem', color: 'var(--gray-muted)', marginTop: 4 }}>{t('manageAccess')}</p>
         </div>
-        <button className="btn btn-gold" onClick={() => { setEditing(null); setShowAdd(true) }}><Plus size={15} /> הוסף</button>
+        <button className="btn btn-gold" onClick={() => { setEditing(null); setShowAdd(true) }}><Plus size={15} /> {t('add')}</button>
       </div>
 
       {users.length === 0 ? (
         <div className="card empty-state">
           <span style={{ fontSize: 48 }}>👥</span>
-          <h3>אין משתמשים עדיין</h3>
-          <p>הוסף את בני המשפחה כדי לשתף איתם את האפליקציה</p>
-          <button className="btn btn-gold" onClick={() => { setEditing(null); setShowAdd(true) }}><Plus size={15} /> הוסף משתמש</button>
+          <h3>{t('noUsers')}</h3>
+          <p>{t('addFamilyMembers')}</p>
+          <button className="btn btn-gold" onClick={() => { setEditing(null); setShowAdd(true) }}><Plus size={15} /> {t('addUser')}</button>
         </div>
       ) : (
         <>
@@ -229,26 +243,25 @@ export default function UsersPage() {
 
                           {/* Permissions grid */}
                           <div style={{ marginTop: '0.65rem', display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                            {MODULES.map(m => {
-                              const p = user.permissions[m.key]
-                              if (p === 'hidden') return null
+                            {Object.keys(user.permissions).filter(k => user.permissions[k as keyof UserPermissions] !== 'hidden').map(k => {
+                              const p = user.permissions[k as keyof UserPermissions]
                               const opt = PERM_OPTS.find(o => o.value === p)!
                               return (
-                                <span key={m.key} style={{
+                                <span key={k} style={{
                                   fontSize: '0.65rem', fontWeight: 600, padding: '2px 7px', borderRadius: 12,
                                   background: opt.color + '18', color: opt.color, border: `1px solid ${opt.color}33`,
                                 }}>
-                                  {m.label}
+                                  {MODULES_LABELS[k] || k}
                                   {p === 'edit' && <Check size={9} style={{ display: 'inline', marginRight: 3, verticalAlign: 'middle' }} />}
                                 </span>
                               )
                             })}
-                            {MODULES.filter(m => user.permissions[m.key] === 'hidden').map(m => (
-                              <span key={m.key} style={{
+                            {Object.keys(user.permissions).filter(k => user.permissions[k as keyof UserPermissions] === 'hidden').map(k => (
+                              <span key={k} style={{
                                 fontSize: '0.65rem', fontWeight: 600, padding: '2px 7px', borderRadius: 12,
                                 background: '#f0f0f0', color: '#aaa', border: '1px solid #e0e0e0', textDecoration: 'line-through',
                               }}>
-                                {m.label}
+                                {MODULES_LABELS[k] || k}
                               </span>
                             ))}
                           </div>

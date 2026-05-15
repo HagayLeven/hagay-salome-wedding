@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, Play, X, Upload, Image as ImageIcon } from 'lucide-react'
 import { mediaStore } from '@/lib/store'
 import type { MediaItem } from '@/lib/types'
+import { useLang } from '@/lib/lang-context'
 
 interface Props {
   entityId: string
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function ItemMediaDrawer({ entityId, entityName, entityType, triggerLabel }: Props) {
+  const { t } = useLang()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<MediaItem[]>([])
   const [lightbox, setLightbox] = useState<MediaItem | null>(null)
@@ -66,7 +68,7 @@ export default function ItemMediaDrawer({ entityId, entityName, entityType, trig
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--gray-md)' }}
       >
         <Camera size={12} />
-        {triggerLabel || 'תמונות'}
+        {triggerLabel || t('photos')}
         {count > 0 && (
           <span style={{ background: 'var(--gold)', color: 'white', borderRadius: 10, padding: '1px 6px', fontSize: '0.65rem', fontWeight: 700 }}>
             {count}
@@ -96,13 +98,13 @@ export default function ItemMediaDrawer({ entityId, entityName, entityType, trig
                 <div>
                   <h3 style={{ fontWeight: 700, fontSize: '1rem' }}>{entityName}</h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--gray-muted)' }}>
-                    {items.length > 0 ? `${items.length} קבצים` : 'אין תמונות עדיין'}
+                    {items.length > 0 ? `${items.length} ${t('files')}` : t('noMedia')}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button className="btn btn-gold" style={{ fontSize: '0.8rem', gap: 6 }}
                     onClick={() => fileRef.current?.click()}>
-                    <Upload size={14} /> העלה
+                    <Upload size={14} /> {t('upload')}
                   </button>
                   <button onClick={() => setOpen(false)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-muted)', padding: 4 }}>
@@ -119,7 +121,7 @@ export default function ItemMediaDrawer({ entityId, entityName, entityType, trig
                     background: 'var(--bg)', borderRadius: 12, border: '1px solid var(--border)' }}
                   onClick={() => fileRef.current?.click()}>
                   <ImageIcon size={40} style={{ opacity: .3, margin: '0 auto 0.75rem', display: 'block' }} />
-                  <p style={{ fontSize: '0.85rem' }}>לחץ להעלאת תמונות וסרטונים</p>
+                  <p style={{ fontSize: '0.85rem' }}>{t('clickToUploadMedia')}</p>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '0.5rem' }}>
@@ -131,7 +133,7 @@ export default function ItemMediaDrawer({ entityId, entityName, entityType, trig
                     onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--gold)')}
                     onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
                     <Upload size={20} />
-                    <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>הוסף</span>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>{t('addMedia')}</span>
                   </div>
 
                   {items.map(item => (

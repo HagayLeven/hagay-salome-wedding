@@ -2,18 +2,12 @@
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Star, Phone, MapPin } from 'lucide-react'
-import { venueStore, formatILS } from '@/lib/store'
+import { venueStore } from '@/lib/store'
 import type { Venue, VenueStatus } from '@/lib/types'
 import ItemMediaDrawer from '@/components/ui/ItemMediaDrawer'
 import QuotesSection from '@/components/ui/QuotesSection'
 import PriceBadge from '@/components/ui/PriceBadge'
-
-const STATUS: Record<VenueStatus, { label: string; cls: string }> = {
-  INTERESTED: { label: 'מעניין',  cls: 'chip chip-pending'  },
-  VISITED:    { label: 'ביקרנו', cls: 'chip chip-sent'     },
-  BOOKED:     { label: 'הוזמן',  cls: 'chip chip-confirmed' },
-  REJECTED:   { label: 'דחינו',  cls: 'chip chip-declined'  },
-}
+import { useLang } from '@/lib/lang-context'
 
 function Stars({ rating, onChange }: { rating?: number; onChange?: (r: number) => void }) {
   return (
@@ -29,6 +23,7 @@ function Stars({ rating, onChange }: { rating?: number; onChange?: (r: number) =
 }
 
 function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => void; onSave: () => void }) {
+  const { t } = useLang()
   const [form, setForm] = useState({ name: '', location: '', capacity: '', pricePerPerson: '', phone: '', notes: '' })
   const upd = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
   function save() {
@@ -52,19 +47,19 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white',
               borderRadius: '24px 24px 0 0', padding: '1.5rem 1.25rem 2rem', zIndex: 70, boxShadow: '0 -8px 40px rgba(0,0,0,.15)' }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 1.25rem' }} />
-            <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>הוספת אולם</h3>
+            <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>{t('addVenueTitle')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <input className="input" placeholder="שם האולם *" value={form.name} onChange={e => upd('name', e.target.value)} />
-              <input className="input" placeholder="מיקום" value={form.location} onChange={e => upd('location', e.target.value)} />
+              <input className="input" placeholder={`${t('venueName')} *`} value={form.name} onChange={e => upd('name', e.target.value)} />
+              <input className="input" placeholder={t('location')} value={form.location} onChange={e => upd('location', e.target.value)} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <input className="input" placeholder="קיבולת אורחים" type="number" value={form.capacity} onChange={e => upd('capacity', e.target.value)} />
-                <input className="input" placeholder="מחיר לאורח ₪" type="number" value={form.pricePerPerson} onChange={e => upd('pricePerPerson', e.target.value)} />
+                <input className="input" placeholder={t('capacity')} type="number" value={form.capacity} onChange={e => upd('capacity', e.target.value)} />
+                <input className="input" placeholder={t('pricePerPerson')} type="number" value={form.pricePerPerson} onChange={e => upd('pricePerPerson', e.target.value)} />
               </div>
-              <input className="input" placeholder="טלפון" type="tel" value={form.phone} onChange={e => upd('phone', e.target.value)} />
-              <textarea className="input" placeholder="הערות" value={form.notes} onChange={e => upd('notes', e.target.value)} style={{ minHeight: 72 }} />
+              <input className="input" placeholder={t('phone')} type="tel" value={form.phone} onChange={e => upd('phone', e.target.value)} />
+              <textarea className="input" placeholder={t('notes')} value={form.notes} onChange={e => upd('notes', e.target.value)} style={{ minHeight: 72 }} />
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>ביטול</button>
-                <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>שמור</button>
+                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>{t('cancel')}</button>
+                <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>{t('save')}</button>
               </div>
             </div>
           </motion.div>
@@ -75,6 +70,15 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
 }
 
 export default function VenuesPage() {
+  const { t } = useLang()
+
+  const STATUS: Record<VenueStatus, { label: string; cls: string }> = {
+    INTERESTED: { label: t('status_interested'), cls: 'chip chip-pending'  },
+    VISITED:    { label: t('status_visited'),    cls: 'chip chip-sent'     },
+    BOOKED:     { label: t('status_booked'),     cls: 'chip chip-confirmed' },
+    REJECTED:   { label: t('status_rejected'),   cls: 'chip chip-declined'  },
+  }
+
   const [venues, setVenues] = useState<Venue[]>([])
   const [showAdd, setShowAdd] = useState(false)
 
@@ -83,19 +87,19 @@ export default function VenuesPage() {
 
   function updateStatus(id: string, status: VenueStatus) { venueStore.update(id, { status }); load() }
   function updateRating(id: string, rating: number) { venueStore.update(id, { rating }); load() }
-  function del(id: string) { if (!confirm('למחוק אולם?')) return; venueStore.delete(id); load() }
+  function del(id: string) { if (!confirm(t('delete') + '?')) return; venueStore.delete(id); load() }
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>אולמות</h1>
-        <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> הוסף</button>
+        <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>{t('venues')}</h1>
+        <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> {t('add')}</button>
       </div>
 
       {venues.length === 0 ? (
         <div className="card empty-state">
-          <MapPin size={48} /><h3>אין אולמות</h3><p>הוסף את האולם הראשון שבדקתם</p>
-          <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> הוסף אולם</button>
+          <MapPin size={48} /><h3>{t('noVenues')}</h3><p>{t('addFirstVenue')}</p>
+          <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> {t('addVenueTitle')}</button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -112,7 +116,7 @@ export default function VenuesPage() {
                   )}
                   <div style={{ marginTop: 6, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                     <Stars rating={v.rating} onChange={r => updateRating(v.id, r)} />
-                    {v.capacity && <span style={{ fontSize: '0.78rem', color: 'var(--gray-md)' }}>{v.capacity} אורחים</span>}
+                    {v.capacity && <span style={{ fontSize: '0.78rem', color: 'var(--gray-md)' }}>{v.capacity} {t('guests_count')}</span>}
                     <PriceBadge entityId={v.id} entityType="venue" />
                   </div>
                 </div>
@@ -140,7 +144,7 @@ export default function VenuesPage() {
               {v.notes && <div style={{ marginTop: '0.6rem', fontSize: '0.78rem', color: 'var(--gray-muted)', fontStyle: 'italic' }}>{v.notes}</div>}
               <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <ItemMediaDrawer entityId={v.id} entityName={v.name} entityType="venue" />
-                <button onClick={() => del(v.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>מחיקה</button>
+                <button onClick={() => del(v.id)} style={{ background: 'none', border: 'none', fontSize: '0.72rem', color: 'var(--danger)', cursor: 'pointer', opacity: .6 }}>{t('delete')}</button>
               </div>
 
               <QuotesSection entityId={v.id} entityType="venue" entityName={v.name} />

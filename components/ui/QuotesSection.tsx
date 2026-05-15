@@ -5,13 +5,10 @@ import { Plus, ChevronDown, ChevronUp } from 'lucide-react'
 import { quoteStore, expenseStore } from '@/lib/store'
 import QuoteCard from './QuoteCard'
 import type { Quote } from '@/lib/types'
+import { useLang } from '@/lib/lang-context'
 
 function formatILS(n: number) {
   return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(n)
-}
-
-function uid() {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
 
 interface AddQuoteDrawerProps {
@@ -25,6 +22,7 @@ interface AddQuoteDrawerProps {
 }
 
 function AddQuoteDrawer({ open, onClose, onSave, entityType, entityId, entityName, editQuote }: AddQuoteDrawerProps) {
+  const { t } = useLang()
   const [amount, setAmount] = useState('')
   const [title, setTitle] = useState('')
   const [note, setNote] = useState('')
@@ -79,13 +77,13 @@ function AddQuoteDrawer({ open, onClose, onSave, entityType, entityId, entityNam
             }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 1.25rem' }} />
             <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>
-              {editQuote ? 'עריכת הצעת מחיר' : 'הוספת הצעת מחיר'}
+              {editQuote ? t('editQuote') : t('addQuote')}
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {/* Amount */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>סכום (₪) *</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('quoteAmount')}</label>
                 <input
                   className="input"
                   placeholder="0"
@@ -99,10 +97,10 @@ function AddQuoteDrawer({ open, onClose, onSave, entityType, entityId, entityNam
 
               {/* Title */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>כותרת / מה כלול *</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('quoteTitle')}</label>
                 <textarea
                   className="input"
-                  placeholder="פרטי ההצעה..."
+                  placeholder="..."
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   style={{ minHeight: 68 }}
@@ -111,13 +109,13 @@ function AddQuoteDrawer({ open, onClose, onSave, entityType, entityId, entityNam
 
               {/* Note */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>הערה (אופציונלי)</label>
-                <input className="input" placeholder="הערה נוספת..." value={note} onChange={e => setNote(e.target.value)} />
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('quoteNote')}</label>
+                <input className="input" placeholder="..." value={note} onChange={e => setNote(e.target.value)} />
               </div>
 
               {/* Valid until */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>בתוקף עד</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('validUntil')}</label>
                 <input className="input" type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} />
               </div>
 
@@ -139,13 +137,13 @@ function AddQuoteDrawer({ open, onClose, onSave, entityType, entityId, entityNam
                     boxShadow: '0 1px 3px rgba(0,0,0,.2)',
                   }} />
                 </div>
-                <span style={{ fontSize: '0.83rem', fontWeight: 500 }}>סמן כנבחרת מיד?</span>
+                <span style={{ fontSize: '0.83rem', fontWeight: 500 }}>{t('selectNow')}</span>
               </label>
 
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: 4 }}>
-                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>ביטול</button>
+                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>{t('cancel')}</button>
                 <button className="btn btn-gold" style={{ flex: 2 }} onClick={handleSave}
-                  disabled={!amount || !title.trim()}>שמור הצעה</button>
+                  disabled={!amount || !title.trim()}>{t('saveQuote')}</button>
               </div>
             </div>
           </motion.div>
@@ -176,6 +174,7 @@ interface QuotesSectionProps {
 }
 
 export default function QuotesSection({ entityId, entityType, entityName }: QuotesSectionProps) {
+  const { t } = useLang()
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [open, setOpen] = useState(false)
   const [showDrawer, setShowDrawer] = useState(false)
@@ -197,7 +196,6 @@ export default function QuotesSection({ entityId, entityType, entityName }: Quot
       const q = quoteStore.create(data)
       if (data.isSelected) {
         quoteStore.setSelected(q.id, entityType, entityId)
-        // Add to budget
         expenseStore.create({
           description: `${entityName || entityType} — ${data.title}`,
           category: entityType === 'venue' ? 'VENUE' : entityType === 'attire' ? 'ATTIRE' : 'OTHER',
@@ -205,7 +203,7 @@ export default function QuotesSection({ entityId, entityType, entityName }: Quot
           isPaid: false,
           date: new Date().toISOString().slice(0, 10),
         })
-        showToast(`הצעת ${entityName || ''} נוספה לתקציב: ${new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(data.amount)}`)
+        showToast(`${entityName || ''}: ${new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(data.amount)}`)
       }
     }
     load()
@@ -218,7 +216,6 @@ export default function QuotesSection({ entityId, entityType, entityName }: Quot
     load()
     const q = quotes.find(q => q.id === id)
     if (q) {
-      // Update/add expense
       expenseStore.create({
         description: `${entityName || entityType} — ${q.title}`,
         category: entityType === 'venue' ? 'VENUE' : entityType === 'attire' ? 'ATTIRE' : 'OTHER',
@@ -226,7 +223,7 @@ export default function QuotesSection({ entityId, entityType, entityName }: Quot
         isPaid: false,
         date: new Date().toISOString().slice(0, 10),
       })
-      showToast(`הצעת ${entityName || ''} נוספה לתקציב: ${formatILS(q.amount)}`)
+      showToast(`${entityName || ''}: ${formatILS(q.amount)}`)
     }
     load()
   }
@@ -263,7 +260,7 @@ export default function QuotesSection({ entityId, entityType, entityName }: Quot
         aria-expanded={open}
       >
         <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--charcoal)' }}>
-          הצעות מחיר {quotes.length > 0 && <span style={{ color: 'var(--gold)' }}>({quotes.length})</span>}
+          {t('quotes')} {quotes.length > 0 && <span style={{ color: 'var(--gold)' }}>({quotes.length})</span>}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {selected && (
@@ -293,9 +290,9 @@ export default function QuotesSection({ entityId, entityType, entityName }: Quot
                   padding: '0.5rem 0.75rem', background: 'var(--bg)', borderRadius: 8,
                   fontSize: '0.72rem', color: 'var(--gray-muted)',
                 }}>
-                  <span>הכי זול: <strong style={{ color: 'var(--charcoal)' }}>{formatILS(minAmt)}</strong></span>
-                  <span>הכי יקר: <strong style={{ color: 'var(--charcoal)' }}>{formatILS(maxAmt)}</strong></span>
-                  {selected && <span>נבחר: <strong style={{ color: 'var(--gold)' }}>{formatILS(selected.amount)}</strong></span>}
+                  <span>{t('cheapest')}: <strong style={{ color: 'var(--charcoal)' }}>{formatILS(minAmt)}</strong></span>
+                  <span>{t('expensive')}: <strong style={{ color: 'var(--charcoal)' }}>{formatILS(maxAmt)}</strong></span>
+                  {selected && <span>{t('chosen')}: <strong style={{ color: 'var(--gold)' }}>{formatILS(selected.amount)}</strong></span>}
                 </div>
               )}
 
@@ -317,7 +314,7 @@ export default function QuotesSection({ entityId, entityType, entityName }: Quot
                 style={{ marginTop: '0.75rem', width: '100%', fontSize: '0.82rem' }}
                 onClick={() => { setEditQuote(null); setShowDrawer(true) }}
               >
-                <Plus size={14} /> הוסף הצעת מחיר
+                <Plus size={14} /> {t('addQuoteBtn')}
               </button>
             </div>
           </motion.div>
@@ -330,7 +327,7 @@ export default function QuotesSection({ entityId, entityType, entityName }: Quot
           style={{ marginTop: '0.5rem', fontSize: '0.78rem', padding: '4px 12px' }}
           onClick={() => { setOpen(true); setShowDrawer(true) }}
         >
-          <Plus size={13} /> הוסף הצעת מחיר
+          <Plus size={13} /> {t('addQuoteBtn')}
         </button>
       )}
 

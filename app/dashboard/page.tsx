@@ -7,10 +7,12 @@ import Image from 'next/image'
 import CircularRing from '@/components/ui/CircularRing'
 import { guestStore, vendorStore, venueStore, attireStore, taskStore, expenseStore, settingsStore, activityStore, quoteStore, getDaysToWedding, formatILS, formatDate } from '@/lib/store'
 import type { Settings } from '@/lib/types'
+import { useLang } from '@/lib/lang-context'
 
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }
 
 export default function Dashboard() {
+  const { t } = useLang()
   const [ready, setReady] = useState(false)
   const [days, setDays] = useState(0)
   const [settings, setSettings] = useState<Settings | null>(null)
@@ -46,24 +48,24 @@ export default function Dashboard() {
     vendorStore.getAll().forEach(v => {
       const qs = allQuotes.filter(q => q.entityType === 'vendor' && q.entityId === v.id)
       if (!qs.some(q => q.isSelected)) {
-        pending.push({ id: v.id, name: v.name, type: 'ספק', href: '/vendors', quoteCount: qs.length })
+        pending.push({ id: v.id, name: v.name, type: t('vendors'), href: '/vendors', quoteCount: qs.length })
       }
     })
     venueStore.getAll().forEach(v => {
       const qs = allQuotes.filter(q => q.entityType === 'venue' && q.entityId === v.id)
       if (!qs.some(q => q.isSelected)) {
-        pending.push({ id: v.id, name: v.name, type: 'אולם', href: '/venues', quoteCount: qs.length })
+        pending.push({ id: v.id, name: v.name, type: t('venues'), href: '/venues', quoteCount: qs.length })
       }
     })
     attireStore.getAll().forEach(a => {
       const qs = allQuotes.filter(q => q.entityType === 'attire' && q.entityId === a.id)
       if (!qs.some(q => q.isSelected)) {
-        pending.push({ id: a.id, name: a.name, type: 'ביגוד', href: '/attire', quoteCount: qs.length })
+        pending.push({ id: a.id, name: a.name, type: t('attire'), href: '/attire', quoteCount: qs.length })
       }
     })
     setPendingDecision(pending)
     setReady(true)
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const ringColor = stats.budgetPct > 90 ? '#E05C5C' : stats.budgetPct > 70 ? '#F0A04B' : '#C9A96E'
 
@@ -86,8 +88,8 @@ export default function Dashboard() {
           border: '3px solid var(--gold)', boxShadow: '0 4px 20px rgba(201,169,110,.35)', margin: '0 auto 1rem' }}>
           <Image src="/couple.jpg" alt="חגי וסלומה" fill style={{ objectFit: 'cover', objectPosition: 'center top' }} />
         </div>
-        <div role="img" aria-label={`נותרו ${days} ימים לחתונה`}>
-          <CircularRing value={365 - days} max={365} size="xl" centerText={String(days)} centerSub="ימים" />
+        <div role="img" aria-label={`נותרו ${days} ${t('daysToWedding')}`}>
+          <CircularRing value={365 - days} max={365} size="xl" centerText={String(days)} centerSub={t('daysToWedding')} />
         </div>
         <div style={{ marginTop: '1rem' }}>
           <div className="font-display" style={{ fontSize: '1.7rem', color: 'var(--charcoal)' }}>
@@ -102,10 +104,10 @@ export default function Dashboard() {
       {/* Quick stats */}
       <motion.div variants={fadeUp} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
         {[
-          { label: 'מוזמנים', value: stats.confirmed, max: Math.max(stats.total, 1), sub: `${stats.confirmed}/${stats.total}` },
-          { label: 'תקציב', value: stats.budgetPct, max: 100, sub: `${stats.budgetPct}%`, color: ringColor, ariaLabel: `נוצל ${stats.budgetPct} אחוז מהתקציב` },
-          { label: 'ספקים', value: stats.vendorSigned, max: Math.max(stats.vendorTotal, 1), sub: `${stats.vendorSigned}/${stats.vendorTotal}` },
-          { label: 'משימות', value: stats.taskDone, max: Math.max(stats.taskTotal, 1), sub: `${stats.taskDone}/${stats.taskTotal}` },
+          { label: t('guests'), value: stats.confirmed, max: Math.max(stats.total, 1), sub: `${stats.confirmed}/${stats.total}` },
+          { label: t('budget'), value: stats.budgetPct, max: 100, sub: `${stats.budgetPct}%`, color: ringColor, ariaLabel: `${t('usedBudget')} ${stats.budgetPct}%` },
+          { label: t('vendors'), value: stats.vendorSigned, max: Math.max(stats.vendorTotal, 1), sub: `${stats.vendorSigned}/${stats.vendorTotal}` },
+          { label: t('tasks'), value: stats.taskDone, max: Math.max(stats.taskTotal, 1), sub: `${stats.taskDone}/${stats.taskTotal}` },
         ].map(s => (
           <div key={s.label} className="card" style={{ padding: '1rem 0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
             <div role="img" aria-label={'ariaLabel' in s ? s.ariaLabel : `${s.label}: ${s.sub}`}>
@@ -121,15 +123,15 @@ export default function Dashboard() {
         <div className="section-bar">
           <div className="section-bar-title">
             <div className="section-bar-accent" />
-            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>פעולות מהירות</span>
+            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('quickActions')}</span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           {[
-            { href: '/guests?new=1',  Icon: UserPlus,   label: 'הוסף מוזמן' },
-            { href: '/vendors?new=1', Icon: Handshake,  label: 'הוסף ספק' },
-            { href: '/budget?new=1',  Icon: Receipt,    label: 'הוסף הוצאה' },
-            { href: '/tasks?new=1',   Icon: CheckSquare,label: 'הוסף משימה' },
+            { href: '/guests?new=1',  Icon: UserPlus,    label: t('addGuest') },
+            { href: '/vendors?new=1', Icon: Handshake,   label: t('addVendor') },
+            { href: '/budget?new=1',  Icon: Receipt,     label: t('addExpense') },
+            { href: '/tasks?new=1',   Icon: CheckSquare, label: t('addTask') },
           ].map(({ href, Icon, label }) => (
             <Link key={href} href={href} className="card" style={{
               flex: '1 1 140px', padding: '1rem', display: 'flex', flexDirection: 'column',
@@ -154,13 +156,13 @@ export default function Dashboard() {
           <div className="section-bar" style={{ marginBottom: '0.75rem' }}>
             <div className="section-bar-title">
               <div className="section-bar-accent" />
-              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>תקציב</span>
+              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('budget')}</span>
             </div>
-            <Link href="/budget" style={{ fontSize: '0.78rem', color: 'var(--gold)', textDecoration: 'none' }}>כל הפרטים</Link>
+            <Link href="/budget" style={{ fontSize: '0.78rem', color: 'var(--gold)', textDecoration: 'none' }}>{t('allDetails')}</Link>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--gray-md)' }}>הוצאות: <strong style={{ color: 'var(--charcoal)' }}>{formatILS(stats.budgetSpent)}</strong></span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--gray-md)' }}>מתוך: <strong style={{ color: 'var(--charcoal)' }}>{formatILS(stats.budgetTotal)}</strong></span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--gray-md)' }}>{t('spent_label')}: <strong style={{ color: 'var(--charcoal)' }}>{formatILS(stats.budgetSpent)}</strong></span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--gray-md)' }}>{t('from_label')}: <strong style={{ color: 'var(--charcoal)' }}>{formatILS(stats.budgetTotal)}</strong></span>
           </div>
           <div style={{ background: 'var(--border)', borderRadius: 9999, height: 6, overflow: 'hidden' }}>
             <motion.div initial={{ width: 0 }} animate={{ width: `${stats.budgetPct}%` }}
@@ -175,7 +177,7 @@ export default function Dashboard() {
         <div className="section-bar" style={{ marginBottom: '0.75rem' }}>
           <div className="section-bar-title">
             <div className="section-bar-accent" />
-            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>ממתין להחלטה</span>
+            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('pendingDecision')}</span>
             {pendingDecision.length > 0 && (
               <span style={{ marginRight: 6, background: 'var(--gold)', color: 'white', borderRadius: 9999, fontSize: '0.68rem', fontWeight: 700, padding: '1px 7px' }}>
                 {pendingDecision.length}
@@ -184,7 +186,7 @@ export default function Dashboard() {
           </div>
         </div>
         {pendingDecision.length === 0 ? (
-          <div style={{ fontSize: '0.82rem', color: '#2D7A55', fontWeight: 600 }}>כל ההצעות נבחרו ✓</div>
+          <div style={{ fontSize: '0.82rem', color: '#2D7A55', fontWeight: 600 }}>{t('allQuotesSelected')}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {pendingDecision.slice(0, 5).map(item => (
@@ -196,13 +198,13 @@ export default function Dashboard() {
                   <span style={{ fontSize: '0.72rem', color: 'var(--gray-muted)', marginRight: 8 }}>{item.type}</span>
                 </div>
                 <span style={{ fontSize: '0.72rem', color: item.quoteCount > 0 ? 'var(--gold)' : 'var(--gray-muted)' }}>
-                  {item.quoteCount > 0 ? `${item.quoteCount} הצעות` : 'אין הצעות'}
+                  {item.quoteCount > 0 ? `${item.quoteCount} ${t('quotes')}` : t('noResults')}
                 </span>
               </Link>
             ))}
             {pendingDecision.length > 5 && (
               <span style={{ fontSize: '0.72rem', color: 'var(--gray-muted)', textAlign: 'center' }}>
-                ועוד {pendingDecision.length - 5} נוספים...
+                +{pendingDecision.length - 5}
               </span>
             )}
           </div>
@@ -215,7 +217,7 @@ export default function Dashboard() {
           <div className="section-bar">
             <div className="section-bar-title">
               <div className="section-bar-accent" />
-              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>פעילות אחרונה</span>
+              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('activityFeed')}</span>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

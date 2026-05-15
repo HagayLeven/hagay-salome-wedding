@@ -4,20 +4,22 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
 import { mediaStore } from '@/lib/store'
 import type { MediaItem } from '@/lib/types'
-
-const FILTERS = [
-  { key: 'all', label: 'הכל' },
-  { key: 'vendor', label: 'ספקים' },
-  { key: 'venue', label: 'אולמות' },
-  { key: 'attire', label: 'ביגוד' },
-  { key: 'inspiration', label: 'השראה' },
-]
+import { useLang } from '@/lib/lang-context'
 
 export default function GalleryPage() {
+  const { t } = useLang()
   const [items, setItems] = useState<MediaItem[]>([])
   const [filter, setFilter] = useState('all')
   const [lightbox, setLightbox] = useState<MediaItem | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const FILTERS = [
+    { key: 'all', label: t('allMedia') },
+    { key: 'vendor', label: t('vendorMedia') },
+    { key: 'venue', label: t('venueMedia') },
+    { key: 'attire', label: t('attireMedia') },
+    { key: 'inspiration', label: t('inspirationMedia') },
+  ]
 
   const load = () => setItems(mediaStore.getAll())
   useEffect(() => { load() }, [])
@@ -47,8 +49,8 @@ export default function GalleryPage() {
   return (
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>גלריה</h1>
-        <button className="btn btn-gold" onClick={() => fileRef.current?.click()}><Upload size={15} /> העלה</button>
+        <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>{t('gallery')}</h1>
+        <button className="btn btn-gold" onClick={() => fileRef.current?.click()}><Upload size={15} /> {t('upload')}</button>
         <input ref={fileRef} type="file" accept="image/*,video/*" multiple style={{ display: 'none' }} onChange={handleUpload} />
       </div>
 
@@ -60,8 +62,8 @@ export default function GalleryPage() {
 
       {visible.length === 0 ? (
         <div className="card empty-state" style={{ cursor: 'pointer' }} onClick={() => fileRef.current?.click()}>
-          <ImageIcon size={48} /><h3>הגלריה ריקה</h3><p>לחץ להעלאת תמונות ראשונות</p>
-          <button className="btn btn-gold"><Upload size={15} /> העלה תמונות</button>
+          <ImageIcon size={48} /><h3>{t('galleryEmpty')}</h3><p>{t('clickToUpload')}</p>
+          <button className="btn btn-gold"><Upload size={15} /> {t('uploadPhotos')}</button>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.5rem' }}>

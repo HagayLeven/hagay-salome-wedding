@@ -5,12 +5,12 @@ import { Plus, Check } from 'lucide-react'
 import CircularRing from '@/components/ui/CircularRing'
 import { taskStore, getDaysToWedding } from '@/lib/store'
 import type { Task, TaskAssignee, TaskPriority } from '@/lib/types'
+import { useLang } from '@/lib/lang-context'
 
 const PRIORITY_COLOR: Record<TaskPriority, string> = { HIGH: '#E05C5C', MEDIUM: '#F0A04B', LOW: '#4CAF82' }
-const PRIORITY_LABEL: Record<TaskPriority, string> = { HIGH: 'דחוף', MEDIUM: 'בינוני', LOW: 'נמוך' }
-const ASSIGNEE_LABEL: Record<TaskAssignee, string> = { HAGAY: 'חגי', SALOME: 'סלומה', BOTH: 'שניהם' }
 
 function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => void; onSave: () => void }) {
+  const { t } = useLang()
   const [form, setForm] = useState({ title: '', description: '', assignee: 'BOTH' as TaskAssignee, priority: 'MEDIUM' as TaskPriority, dueDate: '' })
   const upd = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
   function save() {
@@ -30,21 +30,25 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white',
               borderRadius: '24px 24px 0 0', padding: '1.5rem 1.25rem 2rem', zIndex: 70, boxShadow: '0 -8px 40px rgba(0,0,0,.15)' }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 1.25rem' }} />
-            <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>הוספת משימה</h3>
+            <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>{t('addTaskTitle')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <input className="input" placeholder="כותרת *" value={form.title} onChange={e => upd('title', e.target.value)} />
+              <input className="input" placeholder={`${t('taskTitle')} *`} value={form.title} onChange={e => upd('title', e.target.value)} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <select className="input" value={form.assignee} onChange={e => upd('assignee', e.target.value)}>
-                  <option value="BOTH">שניהם</option><option value="HAGAY">חגי</option><option value="SALOME">סלומה</option>
+                  <option value="BOTH">{t('assignee_both')}</option>
+                  <option value="HAGAY">{t('assignee_hagay')}</option>
+                  <option value="SALOME">{t('assignee_salome')}</option>
                 </select>
                 <select className="input" value={form.priority} onChange={e => upd('priority', e.target.value)}>
-                  <option value="HIGH">דחוף</option><option value="MEDIUM">בינוני</option><option value="LOW">נמוך</option>
+                  <option value="HIGH">{t('priority_high')}</option>
+                  <option value="MEDIUM">{t('priority_medium')}</option>
+                  <option value="LOW">{t('priority_low')}</option>
                 </select>
               </div>
               <input className="input" type="date" value={form.dueDate} onChange={e => upd('dueDate', e.target.value)} />
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>ביטול</button>
-                <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>שמור</button>
+                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>{t('cancel')}</button>
+                <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>{t('save')}</button>
               </div>
             </div>
           </motion.div>
@@ -55,9 +59,13 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
 }
 
 export default function TasksPage() {
+  const { t } = useLang()
   const [tasks, setTasks] = useState<Task[]>([])
   const [showAdd, setShowAdd] = useState(false)
   const [days, setDays] = useState(0)
+
+  const PRIORITY_LABEL: Record<TaskPriority, string> = { HIGH: t('priority_high'), MEDIUM: t('priority_medium'), LOW: t('priority_low') }
+  const ASSIGNEE_LABEL: Record<TaskAssignee, string> = { HAGAY: t('assignee_hagay'), SALOME: t('assignee_salome'), BOTH: t('assignee_both') }
 
   const load = useCallback(() => { setTasks(taskStore.getAll()); setDays(getDaysToWedding()) }, [])
   useEffect(() => { load() }, [load])
@@ -72,7 +80,7 @@ export default function TasksPage() {
     load()
   }
   function del(id: string) {
-    if (!confirm('למחוק משימה?')) return
+    if (!confirm(t('delete') + '?')) return
     taskStore.delete(id); load()
   }
 
@@ -116,18 +124,18 @@ export default function TasksPage() {
   return (
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>משימות</h1>
-        <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> הוסף</button>
+        <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>{t('tasks')}</h1>
+        <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> {t('add')}</button>
       </div>
 
       {/* Stats */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
         className="card-lg" style={{ padding: '1.5rem', marginBottom: '1.1rem', background: 'linear-gradient(135deg, #FDF6EC, #F8F5F0)' }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem', flexWrap: 'wrap' }}>
-          <CircularRing value={done} max={Math.max(total, 1)} size="md" centerText={`${done}/${total}`} label="הושלמו" />
-          <CircularRing value={365 - days} max={365} size="md" centerText={String(days)} centerSub="ימים" label="לחתונה" />
+          <CircularRing value={done} max={Math.max(total, 1)} size="md" centerText={`${done}/${total}`} label={t('completed_tasks')} />
+          <CircularRing value={365 - days} max={365} size="md" centerText={String(days)} centerSub={t('daysToWedding')} label={t('toWedding')} />
           <CircularRing value={open.filter(t => t.priority === 'HIGH').length} max={Math.max(open.length, 1)} size="md"
-            centerText={String(open.filter(t => t.priority === 'HIGH').length)} label="דחופות" color="#E05C5C" />
+            centerText={String(open.filter(t => t.priority === 'HIGH').length)} label={t('urgent')} color="#E05C5C" />
         </div>
       </motion.div>
 
@@ -136,12 +144,12 @@ export default function TasksPage() {
         className="card" style={{ overflow: 'hidden', marginBottom: '1rem' }}>
         <div style={{ padding: '0.85rem 1.1rem', borderBottom: '1px solid var(--border)' }}>
           <div className="section-bar-title"><div className="section-bar-accent" />
-            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>משימות פתוחות ({open.length})</span>
+            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('openTasksSection')} ({open.length})</span>
           </div>
         </div>
         {open.length === 0 ? (
           <div className="empty-state" style={{ padding: '2rem' }}>
-            <Check size={40} /><h3>הכל הושלם!</h3>
+            <Check size={40} /><h3>{t('allDone')}</h3>
           </div>
         ) : (
           <AnimatePresence>{open.sort((a,b) => { const p = { HIGH: 0, MEDIUM: 1, LOW: 2 }; return p[a.priority] - p[b.priority] }).map(t => <TaskItem key={t.id} task={t} />)}</AnimatePresence>
@@ -154,7 +162,7 @@ export default function TasksPage() {
           className="card" style={{ overflow: 'hidden', opacity: .75 }}>
           <div style={{ padding: '0.85rem 1.1rem', borderBottom: '1px solid var(--border)' }}>
             <div className="section-bar-title"><div className="section-bar-accent" style={{ background: '#4CAF82' }} />
-              <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--gray-md)' }}>הושלמו ({completed.length})</span>
+              <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--gray-md)' }}>{t('completedSection')} ({completed.length})</span>
             </div>
           </div>
           <AnimatePresence>{completed.map(t => <TaskItem key={t.id} task={t} />)}</AnimatePresence>

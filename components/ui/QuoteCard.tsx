@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion'
 import { Trash2, Pencil, CheckCircle } from 'lucide-react'
 import type { Quote, Installment } from '@/lib/types'
+import { useLang } from '@/lib/lang-context'
 
 function formatILS(n: number) {
   return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(n)
@@ -21,6 +22,7 @@ interface QuoteCardProps {
 }
 
 export default function QuoteCard({ quote, index = 0, onSelect, onEdit, onDelete, onToggleInstallment }: QuoteCardProps) {
+  const { t } = useLang()
   const installments = quote.installments || []
 
   return (
@@ -42,7 +44,7 @@ export default function QuoteCard({ quote, index = 0, onSelect, onEdit, onDelete
           fontSize: '0.72rem', fontWeight: 700,
           padding: '4px 12px', display: 'flex', alignItems: 'center', gap: 6,
         }}>
-          <span>★</span> הצעה נבחרת
+          <span>★</span> {t('selectedQuote')}
         </div>
       )}
 
@@ -67,7 +69,7 @@ export default function QuoteCard({ quote, index = 0, onSelect, onEdit, onDelete
         {/* Valid until */}
         {quote.validUntil && (
           <div style={{ fontSize: '0.72rem', color: 'var(--gray-muted)', marginBottom: 8 }}>
-            בתוקף עד: {formatDate(quote.validUntil)}
+            {t('validUntil')}: {formatDate(quote.validUntil)}
           </div>
         )}
 
@@ -78,7 +80,7 @@ export default function QuoteCard({ quote, index = 0, onSelect, onEdit, onDelete
             fontSize: '0.72rem', color: '#2D7A55', fontWeight: 600,
             background: '#E8F5EE', borderRadius: 9999, padding: '2px 8px', marginBottom: 10,
           }}>
-            <CheckCircle size={11} /> מזין לתקציב אוטומטית
+            <CheckCircle size={11} /> {t('autoBudget')}
           </div>
         )}
 
@@ -86,7 +88,7 @@ export default function QuoteCard({ quote, index = 0, onSelect, onEdit, onDelete
         {installments.length > 0 && (
           <div style={{ marginTop: 8, marginBottom: 8 }}>
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--gray-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-              תשלומים
+              {t('installments')}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {installments.map((inst: Installment) => (
@@ -105,7 +107,7 @@ export default function QuoteCard({ quote, index = 0, onSelect, onEdit, onDelete
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0,
                       }}
-                      aria-label={inst.isPaid ? 'סמן כלא שולם' : 'סמן כשולם'}
+                      aria-label={inst.isPaid ? t('markUnpaid') : t('markPaid')}
                     >
                       {inst.isPaid && <CheckCircle size={11} color="white" />}
                     </button>
@@ -128,14 +130,14 @@ export default function QuoteCard({ quote, index = 0, onSelect, onEdit, onDelete
               style={{ flex: 1, fontSize: '0.78rem', padding: '6px 12px' }}
               onClick={() => onSelect(quote.id)}
             >
-              בחר הצעה זו
+              {t('selectQuote')}
             </button>
           )}
           <button
             className="btn btn-outline"
             style={{ padding: '6px 10px', minWidth: 36 }}
             onClick={() => onEdit(quote)}
-            aria-label="עריכה"
+            aria-label={t('edit')}
           >
             <Pencil size={13} />
           </button>
@@ -143,9 +145,9 @@ export default function QuoteCard({ quote, index = 0, onSelect, onEdit, onDelete
             className="btn"
             style={{ padding: '6px 10px', minWidth: 36, color: 'var(--danger)', border: '1px solid var(--border)', background: 'white' }}
             onClick={() => {
-              if (confirm('למחוק הצעה זו?')) onDelete(quote.id)
+              if (confirm(t('delete') + '?')) onDelete(quote.id)
             }}
-            aria-label="מחיקה"
+            aria-label={t('delete')}
           >
             <Trash2 size={13} />
           </button>

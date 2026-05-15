@@ -6,21 +6,15 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import CircularRing from '@/components/ui/CircularRing'
 import { expenseStore, settingsStore, formatILS } from '@/lib/store'
 import type { Expense, ExpenseCategory } from '@/lib/types'
-
-const CATS: { key: ExpenseCategory; label: string; color: string }[] = [
-  { key: 'VENUE',       label: 'אולם',        color: '#C9A96E' },
-  { key: 'CATERING',    label: 'קייטרינג',    color: '#6B9FD4' },
-  { key: 'PHOTOGRAPHY', label: 'צילום',        color: '#4CAF82' },
-  { key: 'MUSIC',       label: 'מוזיקה',      color: '#F0A04B' },
-  { key: 'ATTIRE',      label: 'ביגוד',       color: '#E05C5C' },
-  { key: 'BEAUTY',      label: 'יופי',         color: '#9B59B6' },
-  { key: 'OTHER',       label: 'אחר',          color: '#999'    },
-]
-
-function catLabel(k: string) { return CATS.find(c => c.key === k)?.label || k }
-function catColor(k: string) { return CATS.find(c => c.key === k)?.color || '#999' }
+import { useLang } from '@/lib/lang-context'
 
 function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => void; onSave: () => void }) {
+  const { t } = useLang()
+  const CATS_ADD: { key: ExpenseCategory; label: string }[] = [
+    { key: 'VENUE', label: t('cat_venue') }, { key: 'CATERING', label: t('cat_catering') },
+    { key: 'PHOTOGRAPHY', label: t('cat_photography') }, { key: 'MUSIC', label: t('cat_music') },
+    { key: 'ATTIRE', label: t('cat_attire') }, { key: 'BEAUTY', label: t('cat_beauty') }, { key: 'OTHER', label: t('cat_other') },
+  ]
   const [form, setForm] = useState({ description: '', category: 'OTHER' as ExpenseCategory, amount: '', isPaid: false, notes: '' })
   const upd = (k: string, v: unknown) => setForm(f => ({ ...f, [k]: v }))
 
@@ -42,22 +36,22 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white',
               borderRadius: '24px 24px 0 0', padding: '1.5rem 1.25rem 2rem', zIndex: 70, boxShadow: '0 -8px 40px rgba(0,0,0,.15)' }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 1.25rem' }} />
-            <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>הוספת הוצאה</h3>
+            <h3 style={{ fontWeight: 700, marginBottom: '1.1rem' }}>{t('addExpenseTitle')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <input className="input" placeholder="תיאור *" value={form.description} onChange={e => upd('description', e.target.value)} />
+              <input className="input" placeholder={`${t('description')} *`} value={form.description} onChange={e => upd('description', e.target.value)} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <select className="input" value={form.category} onChange={e => upd('category', e.target.value)}>
-                  {CATS.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                  {CATS_ADD.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
                 </select>
-                <input className="input" placeholder="סכום ₪ *" type="number" value={form.amount} onChange={e => upd('amount', e.target.value)} />
+                <input className="input" placeholder={`${t('amount')} *`} type="number" value={form.amount} onChange={e => upd('amount', e.target.value)} />
               </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.875rem', cursor: 'pointer' }}>
                 <input type="checkbox" checked={form.isPaid} onChange={e => upd('isPaid', e.target.checked)} />
-                שולם
+                {t('isPaid')}
               </label>
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>ביטול</button>
-                <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>שמור</button>
+                <button className="btn btn-outline" style={{ flex: 1 }} onClick={onClose}>{t('cancel')}</button>
+                <button className="btn btn-gold" style={{ flex: 2 }} onClick={save}>{t('save')}</button>
               </div>
             </div>
           </motion.div>
@@ -68,6 +62,21 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
 }
 
 export default function BudgetPage() {
+  const { t } = useLang()
+
+  const CATS: { key: ExpenseCategory; label: string; color: string }[] = [
+    { key: 'VENUE',       label: t('cat_venue'),        color: '#C9A96E' },
+    { key: 'CATERING',    label: t('cat_catering'),     color: '#6B9FD4' },
+    { key: 'PHOTOGRAPHY', label: t('cat_photography'),  color: '#4CAF82' },
+    { key: 'MUSIC',       label: t('cat_music'),        color: '#F0A04B' },
+    { key: 'ATTIRE',      label: t('cat_attire'),       color: '#E05C5C' },
+    { key: 'BEAUTY',      label: t('cat_beauty'),       color: '#9B59B6' },
+    { key: 'OTHER',       label: t('cat_other'),        color: '#999'    },
+  ]
+
+  function catLabel(k: string) { return CATS.find(c => c.key === k)?.label || k }
+  function catColor(k: string) { return CATS.find(c => c.key === k)?.color || '#999' }
+
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [totalBudget, setTotalBudget] = useState(0)
   const [showAdd, setShowAdd] = useState(false)
@@ -106,7 +115,7 @@ export default function BudgetPage() {
   }
 
   function deleteExpense(id: string) {
-    if (!confirm('למחוק הוצאה?')) return
+    if (!confirm(t('delete') + '?')) return
     expenseStore.delete(id)
     load()
   }
@@ -115,30 +124,30 @@ export default function BudgetPage() {
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
-          <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>תקציב</h1>
+          <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--charcoal)', lineHeight: 1 }}>{t('budget')}</h1>
         </div>
-        <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> הוסף הוצאה</button>
+        <button className="btn btn-gold" onClick={() => setShowAdd(true)}><Plus size={15} /> {t('addExpense')}</button>
       </div>
 
       {/* Hero ring */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
         className="card-lg" style={{ padding: '2rem 1.5rem', textAlign: 'center', background: 'linear-gradient(135deg, #FDF6EC, #F8F5F0)', marginBottom: '1.1rem' }}>
         <CircularRing value={totalSpent} max={Math.max(totalBudget, totalSpent, 1)} size="xl"
-          centerText={`${pct}%`} centerSub="נוצל" color={ringColor} />
+          centerText={`${pct}%`} centerSub={t('usedBudget')} color={ringColor} />
         <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--charcoal)', fontVariantNumeric: 'tabular-nums' }}>{formatILS(totalSpent)}</div>
-            <div className="label-caps">הוצאות</div>
+            <div className="label-caps">{t('spent')}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#4CAF82', fontVariantNumeric: 'tabular-nums' }}>{formatILS(totalPaid)}</div>
-            <div className="label-caps">שולם</div>
+            <div className="label-caps">{t('paid')}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '1.3rem', fontWeight: 700, color: remaining < 0 ? '#E05C5C' : 'var(--charcoal)', fontVariantNumeric: 'tabular-nums' }}>
               {formatILS(remaining)}
             </div>
-            <div className="label-caps">נותר</div>
+            <div className="label-caps">{t('remaining')}</div>
           </div>
         </div>
 
@@ -147,12 +156,12 @@ export default function BudgetPage() {
           {editBudget ? (
             <>
               <input className="input" type="number" value={budgetInput} onChange={e => setBudgetInput(e.target.value)}
-                style={{ width: 140, textAlign: 'center' }} placeholder="סכום תקציב" />
-              <button className="btn btn-gold" style={{ minHeight: 36, padding: '0 12px' }} onClick={saveBudget}>שמור</button>
+                style={{ width: 140, textAlign: 'center' }} placeholder={t('budgetAmount')} />
+              <button className="btn btn-gold" style={{ minHeight: 36, padding: '0 12px' }} onClick={saveBudget}>{t('save')}</button>
             </>
           ) : (
             <button className="btn btn-ghost" style={{ fontSize: '0.8rem' }} onClick={() => setEditBudget(true)}>
-              תקציב כולל: {totalBudget > 0 ? formatILS(totalBudget) : 'לא הוגדר'} ✏️
+              {t('totalBudgetLabel')}: {totalBudget > 0 ? formatILS(totalBudget) : t('budgetNotSet')} ✏️
             </button>
           )}
         </div>
@@ -164,7 +173,7 @@ export default function BudgetPage() {
           className="card" style={{ padding: '1.25rem', marginBottom: '1.1rem' }}>
           <div className="section-bar">
             <div className="section-bar-title"><div className="section-bar-accent" />
-              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>פירוט לפי קטגוריה</span>
+              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('categoryBreakdown')}</span>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
@@ -196,12 +205,12 @@ export default function BudgetPage() {
         className="card" style={{ overflow: 'hidden' }}>
         <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
           <div className="section-bar-title"><div className="section-bar-accent" />
-            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>כל ההוצאות</span>
+            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('allExpenses')}</span>
           </div>
         </div>
         {expenses.length === 0 ? (
           <div className="empty-state">
-            <Plus size={48} /><h3>אין הוצאות עדיין</h3><p>הוסף את ההוצאה הראשונה</p>
+            <Plus size={48} /><h3>{t('noExpenses')}</h3><p>{t('addFirstExpense')}</p>
           </div>
         ) : (
           <div>

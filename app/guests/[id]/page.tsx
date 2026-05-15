@@ -5,14 +5,15 @@ import { motion } from 'framer-motion'
 import { Phone, ArrowRight, Check, MessageCircle, Trash2, Edit2 } from 'lucide-react'
 import { guestStore, buildWhatsAppLink, settingsStore, formatDate } from '@/lib/store'
 import type { Guest, RsvpStatus } from '@/lib/types'
+import { useLang } from '@/lib/lang-context'
 
 function initials(name: string) {
   return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 }
 
 function TimelineStep({
-  step, label, done, timestamp, onToggle, disabled
-}: { step: number; label: string; done: boolean; timestamp?: string; onToggle: () => void; disabled?: boolean }) {
+  step, label, done, timestamp, onToggle, disabled, markAsLabel
+}: { step: number; label: string; done: boolean; timestamp?: string; onToggle: () => void; disabled?: boolean; markAsLabel: string }) {
   return (
     <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -39,7 +40,7 @@ function TimelineStep({
         {timestamp && <div style={{ fontSize: '0.72rem', color: 'var(--gray-muted)', marginTop: 2 }}>{timestamp}</div>}
         {!done && !disabled && (
           <button className="btn btn-outline" style={{ marginTop: 8, fontSize: '0.75rem', padding: '4px 12px', minHeight: 32 }} onClick={onToggle}>
-            סמן כ{label}
+            {markAsLabel}{label}
           </button>
         )}
       </div>
@@ -48,11 +49,16 @@ function TimelineStep({
 }
 
 export default function GuestPage() {
+  const { t } = useLang()
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [guest, setGuest] = useState<Guest | null>(null)
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<Partial<Guest>>({})
+
+  const groupLabels: Record<string, string> = {
+    FAMILY: t('family'), FRIENDS: t('friends'), WORK: t('work'), ARMY: t('army'), OTHER: t('other')
+  }
 
   useEffect(() => {
     const g = guestStore.getById(id)
@@ -84,7 +90,7 @@ export default function GuestPage() {
   }
 
   function handleDelete() {
-    if (!confirm('למחוק את המוזמן?')) return
+    if (!confirm(t('confirmDelete'))) return
     guestStore.delete(id)
     router.push('/guests')
   }
@@ -99,13 +105,15 @@ export default function GuestPage() {
   const waMsg = encodeURIComponent(settings.whatsappTemplate.replace('{name}', guest.name.split(' ')[0]))
   const waLink = `${buildWhatsAppLink(guest.phone)}?text=${waMsg}`
 
-  const groupLabels: Record<string, string> = { FAMILY: 'משפחה', FRIENDS: 'חברים', WORK: 'עבודה', ARMY: 'צבא', OTHER: 'אחר' }
+  const rsvpLabel: Record<RsvpStatus, string> = {
+    PENDING: t('pending'), CONFIRMED: t('arriving'), DECLINED: t('notArriving')
+  }
 
   return (
     <div style={{ maxWidth: 520, margin: '0 auto' }}>
       {/* Back */}
       <button className="btn btn-ghost" style={{ marginBottom: '1rem', gap: 6, paddingRight: 0 }} onClick={() => router.push('/guests')}>
-        <ArrowRight size={16} /> חזרה למוזמנים
+        <ArrowRight size={16} /> {t('backToGuests')}
       </button>
 
       {/* Hero */}
@@ -118,7 +126,7 @@ export default function GuestPage() {
             border: `1px solid ${editing ? 'var(--gold)' : 'var(--border)'}`, borderRadius: 8, padding: '5px 8px',
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem',
             color: editing ? 'white' : 'var(--gray-md)', fontWeight: 600 }}>
-          <Edit2 size={13} /> {editing ? 'שמור' : 'עריכה'}
+          <Edit2 size={13} /> {editing ? t('save') : t('edit')}
         </button>
 
         {guest.photoUrl ? (
@@ -132,7 +140,7 @@ export default function GuestPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', marginBottom: '0.85rem' }}>
             <input className="input" value={form.name || ''} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 700, maxWidth: 260 }} />
-            <input className="input" placeholder="שם בעברית (אופציונלי)" value={form.nameHe || ''}
+            <input className="input" placeholder={t('nameOptional')} value={form.nameHe || ''}
               onChange={e => setForm(f => ({ ...f, nameHe: e.target.value }))}
               style={{ textAlign: 'center', fontSize: '0.85rem', maxWidth: 260 }} />
           </div>
@@ -155,30 +163,30 @@ export default function GuestPage() {
                     background: (form.side || guest.side) === s ? (s === 'GROOM' ? '#6B9FD4' : '#C9A96E') : 'white',
                     color: (form.side || guest.side) === s ? 'white' : 'var(--gray-md)',
                     border: `1.5px solid ${(form.side || guest.side) === s ? 'transparent' : 'var(--border)'}` }}>
-                  {s === 'GROOM' ? 'צד חתן' : 'צד כלה'}
+                  {s === 'GROOM' ? t('groomSide') : t('brideSide')}
                 </button>
               ))}
             </div>
             {/* Group */}
             <select className="input" value={form.group || guest.group} onChange={e => setForm(f => ({ ...f, group: e.target.value as Guest['group'] }))}
               style={{ maxWidth: 180, textAlign: 'center' }}>
-              <option value="FAMILY">משפחה</option>
-              <option value="FRIENDS">חברים</option>
-              <option value="WORK">עבודה</option>
-              <option value="ARMY">צבא</option>
-              <option value="OTHER">אחר</option>
+              <option value="FAMILY">{t('family')}</option>
+              <option value="FRIENDS">{t('friends')}</option>
+              <option value="WORK">{t('work')}</option>
+              <option value="ARMY">{t('army')}</option>
+              <option value="OTHER">{t('other')}</option>
             </select>
             {/* Phone */}
-            <input className="input" placeholder="טלפון" value={form.phone || ''} type="tel"
+            <input className="input" placeholder={t('phone')} value={form.phone || ''} type="tel"
               onChange={e => setForm(f => ({ ...f, phone: e.target.value, whatsapp: e.target.value }))}
               style={{ maxWidth: 200, textAlign: 'center' }} />
             {/* Note */}
-            <input className="input" placeholder="הערה" value={form.note || ''}
+            <input className="input" placeholder={t('note')} value={form.note || ''}
               onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
               style={{ maxWidth: 260, textAlign: 'center' }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-              <button className="btn btn-outline" onClick={() => { setEditing(false); setForm(guest) }}>ביטול</button>
-              <button className="btn btn-gold" onClick={saveEdit}>שמור</button>
+              <button className="btn btn-outline" onClick={() => { setEditing(false); setForm(guest) }}>{t('cancel')}</button>
+              <button className="btn btn-gold" onClick={saveEdit}>{t('save')}</button>
             </div>
           </div>
         ) : (
@@ -188,7 +196,7 @@ export default function GuestPage() {
                 {groupLabels[guest.group]}
               </span>
               <span className="chip chip-muted" style={{ background: 'rgba(255,255,255,.7)', color: 'var(--gray-md)', border: '1px solid var(--border)' }}>
-                {guest.side === 'GROOM' ? 'צד חתן' : 'צד כלה'}
+                {guest.side === 'GROOM' ? t('groomSide') : t('brideSide')}
               </span>
             </div>
             {guest.note && <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--gray-md)', fontStyle: 'italic' }}>{guest.note}</p>}
@@ -206,7 +214,7 @@ export default function GuestPage() {
           {guest.phone}
         </a>
         <a href={waLink} target="_blank" rel="noreferrer" className="btn btn-whatsapp" style={{ flex: 1, gap: 8 }}>
-          <MessageCircle size={16} /> וואטסאפ
+          <MessageCircle size={16} /> WhatsApp
         </a>
       </motion.div>
 
@@ -216,19 +224,19 @@ export default function GuestPage() {
         <div className="section-bar">
           <div className="section-bar-title">
             <div className="section-bar-accent" />
-            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>מעקב הזמנה</span>
+            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('invitationTracking')}</span>
           </div>
         </div>
         <div className="timeline" style={{ gap: 0 }}>
-          <TimelineStep step={1} label="הזמנה נשלחה" done={guest.invitationSent}
-            timestamp={guest.invitationSentAt ? `נשלחה ${formatDate(guest.invitationSentAt)}` : undefined}
-            onToggle={markSent} />
-          <TimelineStep step={2} label="הזמנה התקבלה" done={guest.invitationAcknowledged}
-            timestamp={guest.invitationAcknowledgedAt ? `התקבלה ${formatDate(guest.invitationAcknowledgedAt)}` : undefined}
-            onToggle={markAcknowledged} disabled={!guest.invitationSent} />
-          <TimelineStep step={3} label="אישור הגעה" done={guest.rsvpStatus === 'CONFIRMED'}
+          <TimelineStep step={1} label={t('invitationSent')} done={guest.invitationSent}
+            timestamp={guest.invitationSentAt ? `${formatDate(guest.invitationSentAt)}` : undefined}
+            onToggle={markSent} markAsLabel={t('markAs')} />
+          <TimelineStep step={2} label={t('invitationReceived')} done={guest.invitationAcknowledged}
+            timestamp={guest.invitationAcknowledgedAt ? `${formatDate(guest.invitationAcknowledgedAt)}` : undefined}
+            onToggle={markAcknowledged} disabled={!guest.invitationSent} markAsLabel={t('markAs')} />
+          <TimelineStep step={3} label={t('attendanceConfirmed')} done={guest.rsvpStatus === 'CONFIRMED'}
             timestamp={guest.attendanceConfirmedAt ? formatDate(guest.attendanceConfirmedAt) : undefined}
-            onToggle={() => {}} disabled={!guest.invitationAcknowledged} />
+            onToggle={() => {}} disabled={!guest.invitationAcknowledged} markAsLabel={t('markAs')} />
         </div>
 
         {/* RSVP selector */}
@@ -242,7 +250,7 @@ export default function GuestPage() {
                 color: guest.rsvpStatus === r ? 'white' : 'var(--gray-md)',
                 border: `1.5px solid ${guest.rsvpStatus === r ? 'transparent' : 'var(--border)'}`,
               }}>
-              {r === 'CONFIRMED' ? 'מגיע ✓' : r === 'DECLINED' ? 'לא מגיע ✗' : 'ממתין'}
+              {rsvpLabel[r]}
             </button>
           ))}
         </div>
@@ -252,10 +260,10 @@ export default function GuestPage() {
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .16 }}
         style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
         <a href={waLink} target="_blank" rel="noreferrer" className="btn btn-whatsapp" style={{ justifyContent: 'center', gap: 10, fontSize: '0.95rem' }}>
-          <MessageCircle size={18} /> שלח הזמנה בוואטסאפ
+          <MessageCircle size={18} /> {t('sendWhatsApp')}
         </a>
         <button onClick={handleDelete} className="btn btn-ghost" style={{ color: 'var(--danger)', fontSize: '0.82rem' }}>
-          <Trash2 size={14} /> מחיקת מוזמן
+          <Trash2 size={14} /> {t('deleteGuest')}
         </button>
       </motion.div>
     </div>

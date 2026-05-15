@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { guestStore } from '@/lib/store'
 import type { Side, GuestGroup } from '@/lib/types'
+import { useLang } from '@/lib/lang-context'
 
 interface Props {
   open: boolean
@@ -14,6 +15,7 @@ interface Props {
 type OcrResult = { name: string; phone: string; confidence: 'high' | 'medium' | 'low'; error?: string }
 
 export default function PhotoImportDrawer({ open, onClose, onSave }: Props) {
+  const { t } = useLang()
   const fileRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -38,7 +40,6 @@ export default function PhotoImportDrawer({ open, onClose, onSave }: Props) {
   }
 
   async function handleFile(file: File) {
-    // Show preview
     const reader = new FileReader()
     reader.onload = e => setPreview(e.target?.result as string)
     reader.readAsDataURL(file)
@@ -81,7 +82,6 @@ export default function PhotoImportDrawer({ open, onClose, onSave }: Props) {
 
   function save() {
     if (!form.name.trim()) return
-    // Convert preview base64 to photoUrl
     guestStore.create({
       name: form.name,
       phone: form.phone,
@@ -131,9 +131,9 @@ export default function PhotoImportDrawer({ open, onClose, onSave }: Props) {
           >
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 1.25rem' }} />
 
-            <h3 style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.25rem' }}>ייבוא מתמונה</h3>
+            <h3 style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.25rem' }}>{t('photoImportTitle')}</h3>
             <p style={{ fontSize: '0.78rem', color: 'var(--gray-muted)', marginBottom: '1rem' }}>
-              צלם או העלה תמונה של איש קשר
+              {t('photoImportSubtitle')}
             </p>
 
             {success ? (
@@ -142,7 +142,7 @@ export default function PhotoImportDrawer({ open, onClose, onSave }: Props) {
                 style={{ textAlign: 'center', padding: '2rem 0' }}
               >
                 <CheckCircle2 size={48} color="#4CAF82" style={{ margin: '0 auto 0.75rem' }} />
-                <div style={{ fontWeight: 700, color: 'var(--charcoal)' }}>מוזמן נוסף בהצלחה!</div>
+                <div style={{ fontWeight: 700, color: 'var(--charcoal)' }}>{t('guestAdded')}</div>
               </motion.div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
@@ -162,9 +162,9 @@ export default function PhotoImportDrawer({ open, onClose, onSave }: Props) {
                     onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
                   >
                     <Camera size={32} color="var(--gold)" style={{ margin: '0 auto 0.5rem' }} />
-                    <div style={{ fontSize: '0.85rem', color: 'var(--charcoal)', fontWeight: 600 }}>צלם או העלה תמונה</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--charcoal)', fontWeight: 600 }}>{t('takeOrUpload')}</div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--gray-muted)', marginTop: 4 }}>
-                      צילום מסך, כרטיס ביקור, WhatsApp
+                      WhatsApp
                     </div>
                   </div>
                 ) : (
@@ -176,7 +176,7 @@ export default function PhotoImportDrawer({ open, onClose, onSave }: Props) {
                     {loading && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--gray-muted)', fontSize: '0.82rem', paddingTop: 14 }}>
                         <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                        מנתח תמונה...
+                        {t('analyzingImage')}
                       </div>
                     )}
                     {!loading && (
@@ -185,7 +185,7 @@ export default function PhotoImportDrawer({ open, onClose, onSave }: Props) {
                         className="btn btn-ghost"
                         style={{ fontSize: '0.75rem', paddingRight: 0, marginTop: 10 }}
                       >
-                        החלף תמונה
+                        {t('replaceImage')}
                       </button>
                     )}
                   </div>
@@ -201,20 +201,20 @@ export default function PhotoImportDrawer({ open, onClose, onSave }: Props) {
                     padding: '0.6rem 0.85rem', fontSize: '0.78rem', color: '#7A6010',
                   }}>
                     <AlertCircle size={14} />
-                    לא הצלחנו לקרוא את הפרטים — מלא ידנית
+                    {t('lowConfidence')}
                   </div>
                 )}
 
-                {/* Form (shown after image selected) */}
+                {/* Form */}
                 {(preview || true) && (
                   <>
-                    <input className="input" placeholder="שם מלא *" value={form.name} onChange={e => upd('name', e.target.value)} />
-                    <input className="input" placeholder="טלפון" type="tel" value={form.phone} onChange={e => upd('phone', e.target.value)} />
-                    <input className="input" placeholder="שם בעברית (אופציונלי)" value={form.nameHe} onChange={e => upd('nameHe', e.target.value)} />
+                    <input className="input" placeholder={`${t('guestName')} *`} value={form.name} onChange={e => upd('name', e.target.value)} />
+                    <input className="input" placeholder={t('phone')} type="tel" value={form.phone} onChange={e => upd('phone', e.target.value)} />
+                    <input className="input" placeholder={t('nameOptional')} value={form.nameHe} onChange={e => upd('nameHe', e.target.value)} />
 
                     {/* Side toggle */}
                     <div style={{ display: 'flex', gap: 8 }}>
-                      {([['GROOM', 'צד חתן 🔵'], ['BRIDE', 'צד כלה 🟡']] as const).map(([s, label]) => (
+                      {(['GROOM', 'BRIDE'] as const).map((s) => (
                         <button
                           key={s}
                           onClick={() => upd('side', s)}
@@ -226,26 +226,26 @@ export default function PhotoImportDrawer({ open, onClose, onSave }: Props) {
                             border: `1.5px solid ${form.side === s ? 'transparent' : 'var(--border)'}`,
                           }}
                         >
-                          {label}
+                          {s === 'GROOM' ? `${t('groomSide')} 🔵` : `${t('brideSide')} 🟡`}
                         </button>
                       ))}
                     </div>
 
                     {/* Group */}
                     <select className="input" value={form.group} onChange={e => upd('group', e.target.value)}>
-                      <option value="FAMILY">משפחה</option>
-                      <option value="FRIENDS">חברים</option>
-                      <option value="WORK">עבודה</option>
-                      <option value="ARMY">צבא</option>
-                      <option value="OTHER">אחר</option>
+                      <option value="FAMILY">{t('family')}</option>
+                      <option value="FRIENDS">{t('friends')}</option>
+                      <option value="WORK">{t('work')}</option>
+                      <option value="ARMY">{t('army')}</option>
+                      <option value="OTHER">{t('other')}</option>
                     </select>
 
-                    <input className="input" placeholder="הערה" value={form.note} onChange={e => upd('note', e.target.value)} />
+                    <input className="input" placeholder={t('note')} value={form.note} onChange={e => upd('note', e.target.value)} />
 
                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: 4 }}>
-                      <button className="btn btn-outline" style={{ flex: 1 }} onClick={handleClose}>ביטול</button>
+                      <button className="btn btn-outline" style={{ flex: 1 }} onClick={handleClose}>{t('cancel')}</button>
                       <button className="btn btn-gold" style={{ flex: 2 }} onClick={save} disabled={!form.name.trim()}>
-                        הוסף מוזמן
+                        {t('addGuest')}
                       </button>
                     </div>
                   </>
