@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
 
 type Status = 'connected' | 'syncing' | 'offline'
 
@@ -8,16 +7,18 @@ export default function SyncIndicator() {
   const [status, setStatus] = useState<Status>('connected')
 
   useEffect(() => {
-    function checkOnline() {
+    async function checkOnline() {
       if (!navigator.onLine) {
         setStatus('offline')
         return
       }
-      // Quick connection test
       setStatus('syncing')
-      supabase.from('guests').select('id').limit(1).then(({ error }) => {
-        setStatus(error ? 'offline' : 'connected')
-      })
+      try {
+        const res = await fetch('/api/db/settings', { cache: 'no-store' })
+        setStatus(res.ok ? 'connected' : 'offline')
+      } catch {
+        setStatus('offline')
+      }
     }
 
     checkOnline()
@@ -53,7 +54,7 @@ export default function SyncIndicator() {
           flexShrink: 0,
         }} />
         {status === 'connected' && 'מחובר'}
-        {status === 'syncing' && 'מסנכרן...'}
+        {status === 'syncing' && 'טוען...'}
         {status === 'offline' && 'לא מחובר'}
       </div>
 
