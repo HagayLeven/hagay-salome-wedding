@@ -4,10 +4,19 @@ import { motion } from 'framer-motion'
 import { Save } from 'lucide-react'
 import { settingsStore } from '@/lib/store'
 import type { Settings } from '@/lib/types'
+import { useLang } from '@/lib/lang-context'
+import type { Lang } from '@/lib/i18n'
+
+const LANG_OPTIONS: { code: Lang; flag: string; label: string }[] = [
+  { code: 'he', flag: '🇮🇱', label: 'עברית' },
+  { code: 'fr', flag: '🇫🇷', label: 'Français' },
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+]
 
 export default function SettingsPage() {
   const [form, setForm] = useState<Settings | null>(null)
   const [saved, setSaved] = useState(false)
+  const { lang, setLang } = useLang()
 
   useEffect(() => { setForm(settingsStore.get()) }, [])
 
@@ -74,6 +83,33 @@ export default function SettingsPage() {
           <div>
             <label className="label-caps" style={{ display: 'block', marginBottom: 6 }}>טמפלייט הזמנה (השתמש ב-{'{name}'} לשם)</label>
             <textarea className="input" value={form.whatsappTemplate} onChange={e => upd('whatsappTemplate', e.target.value)} style={{ minHeight: 100 }} />
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .18 }}
+          className="card" style={{ padding: '1.25rem' }}>
+          <div className="section-bar">
+            <div className="section-bar-title"><div className="section-bar-accent" />
+              <span style={{ fontWeight: 600 }}>שפת הממשק</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {LANG_OPTIONS.map(l => (
+              <button
+                key={l.code}
+                onClick={() => { setLang(l.code); settingsStore.update({ language: l.code }) }}
+                className="btn"
+                style={{
+                  flex: 1, gap: 6, fontSize: '0.85rem',
+                  background: lang === l.code ? 'var(--gold)' : 'white',
+                  color: lang === l.code ? 'white' : 'var(--charcoal)',
+                  border: `1.5px solid ${lang === l.code ? 'var(--gold)' : 'var(--border)'}`,
+                  fontWeight: lang === l.code ? 700 : 400,
+                }}
+              >
+                {l.flag} {l.label}
+              </button>
+            ))}
           </div>
         </motion.div>
 

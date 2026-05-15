@@ -3,22 +3,26 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Home, Users, Handshake, Building2, Shirt, Wallet, CheckSquare, Image as ImageIcon, Settings, UserCircle2 } from 'lucide-react'
-
-const items = [
-  { href: '/dashboard', label: 'בית',        Icon: Home },
-  { href: '/guests',    label: 'מוזמנים',    Icon: Users },
-  { href: '/vendors',   label: 'ספקים',      Icon: Handshake },
-  { href: '/venues',    label: 'אולמות',     Icon: Building2 },
-  { href: '/attire',    label: 'ביגוד',      Icon: Shirt },
-  { href: '/budget',    label: 'תקציב',      Icon: Wallet },
-  { href: '/tasks',     label: 'משימות',     Icon: CheckSquare },
-  { href: '/gallery',   label: 'גלריה',      Icon: ImageIcon },
-  { href: '/users',     label: 'משתמשים',   Icon: UserCircle2 },
-  { href: '/settings',  label: 'הגדרות',     Icon: Settings },
-]
+import { useLang } from '@/lib/lang-context'
+import LangToggle from '@/components/ui/LangToggle'
 
 export default function Sidebar() {
   const path = usePathname()
+  const { t } = useLang()
+
+  const items = [
+    { href: '/dashboard', labelKey: 'dashboard' as const, Icon: Home },
+    { href: '/guests',    labelKey: 'guests' as const,    Icon: Users },
+    { href: '/vendors',   labelKey: 'vendors' as const,   Icon: Handshake },
+    { href: '/venues',    labelKey: 'venues' as const,    Icon: Building2 },
+    { href: '/attire',    labelKey: 'attire' as const,    Icon: Shirt },
+    { href: '/budget',    labelKey: 'budget' as const,    Icon: Wallet },
+    { href: '/tasks',     labelKey: 'tasks' as const,     Icon: CheckSquare },
+    { href: '/gallery',   labelKey: 'gallery' as const,   Icon: ImageIcon },
+    { href: '/users',     labelKey: 'users' as const,     Icon: UserCircle2 },
+    { href: '/settings',  labelKey: 'settings' as const,  Icon: Settings },
+  ]
+
   return (
     <aside className="sidebar">
       <div style={{ padding: '0 1.25rem 1.25rem', borderBottom: '1px solid var(--border)', marginBottom: '0.75rem' }}>
@@ -38,17 +42,18 @@ export default function Sidebar() {
         </Link>
       </div>
       <nav style={{ flex: 1 }}>
-        {items.map(({ href, label, Icon }) => {
+        {items.map(({ href, labelKey, Icon }) => {
           const active = path === href || (href !== '/dashboard' && path.startsWith(href))
           return (
             <Link key={href} href={href} className={`sidebar-item${active ? ' active' : ''}`}>
               <Icon size={17} strokeWidth={active ? 2.2 : 1.8} />
-              {label}
+              {t(labelKey)}
             </Link>
           )
         })}
       </nav>
-      <div style={{ padding: '1rem 1.25rem', borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
+      <div style={{ padding: '1rem 1.25rem', borderTop: '1px solid var(--border)', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+        <LangToggle />
         <div style={{ fontSize: '0.65rem', color: 'var(--gray-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           EST · MMXXVI
         </div>

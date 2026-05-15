@@ -17,6 +17,8 @@ export interface Guest {
   attendanceConfirmed: boolean
   attendanceConfirmedAt?: string
   note?: string
+  photoUrl?: string
+  nameHe?: string
   createdAt: string
 }
 
@@ -123,7 +125,7 @@ export interface Settings {
   brideName: string
   totalBudget: number
   whatsappTemplate: string
-  language: 'he' | 'en'
+  language: 'he' | 'en' | 'fr'
 }
 
 export interface ActivityItem {

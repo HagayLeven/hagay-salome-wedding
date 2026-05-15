@@ -121,13 +121,28 @@ export default function GuestPage() {
           <Edit2 size={13} /> {editing ? 'שמור' : 'עריכה'}
         </button>
 
-        <div className="avatar avatar-xl" style={{ margin: '0 auto 1rem' }}>{initials(guest.name)}</div>
+        {guest.photoUrl ? (
+          <img src={guest.photoUrl} alt={guest.name}
+            style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', margin: '0 auto 1rem', display: 'block', border: '2px solid var(--gold)', boxShadow: '0 2px 12px rgba(201,169,110,.25)' }} />
+        ) : (
+          <div className="avatar avatar-xl" style={{ margin: '0 auto 1rem' }}>{initials(guest.name)}</div>
+        )}
 
         {editing ? (
-          <input className="input" value={form.name || ''} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-            style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.85rem', maxWidth: 260, margin: '0 auto 0.85rem' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', marginBottom: '0.85rem' }}>
+            <input className="input" value={form.name || ''} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 700, maxWidth: 260 }} />
+            <input className="input" placeholder="שם בעברית (אופציונלי)" value={form.nameHe || ''}
+              onChange={e => setForm(f => ({ ...f, nameHe: e.target.value }))}
+              style={{ textAlign: 'center', fontSize: '0.85rem', maxWidth: 260 }} />
+          </div>
         ) : (
-          <h1 className="font-display" style={{ fontSize: '1.9rem', color: 'var(--charcoal)', marginBottom: 8 }}>{guest.name}</h1>
+          <>
+            <h1 className="font-display" style={{ fontSize: '1.9rem', color: 'var(--charcoal)', marginBottom: 4 }}>{guest.name}</h1>
+            {guest.nameHe && guest.nameHe !== guest.name && (
+              <div style={{ fontSize: '0.85rem', color: 'var(--gray-muted)', marginBottom: 8 }}>{guest.nameHe}</div>
+            )}
+          </>
         )}
 
         {editing ? (

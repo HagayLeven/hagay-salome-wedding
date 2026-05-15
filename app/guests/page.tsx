@@ -1,10 +1,11 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, UserPlus, Download, ChevronLeft, ListPlus } from 'lucide-react'
+import { Search, UserPlus, Download, ChevronLeft, ListPlus, Camera } from 'lucide-react'
 import Link from 'next/link'
 import { guestStore } from '@/lib/store'
 import type { Guest, GuestGroup, RsvpStatus, Side } from '@/lib/types'
+import PhotoImportDrawer from '@/components/ui/PhotoImportDrawer'
 
 const GROUPS: { key: GuestGroup | 'ALL'; label: string }[] = [
   { key: 'ALL', label: 'הכל' },
@@ -25,13 +26,23 @@ function initials(name: string) {
 }
 
 function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => void; onSave: () => void }) {
-  const [form, setForm] = useState({ name: '', phone: '', side: 'GROOM' as Side, group: 'FAMILY' as GuestGroup, note: '' })
+  const [form, setForm] = useState({
+    name: '', phone: '', side: 'GROOM' as Side, group: 'FAMILY' as GuestGroup, note: '', nameHe: ''
+  })
   const upd = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
   function save() {
     if (!form.name.trim() || !form.phone.trim()) return
-    guestStore.create({ ...form, whatsapp: form.phone, rsvpStatus: 'PENDING', invitationSent: false, invitationAcknowledged: false, attendanceConfirmed: false })
-    setForm({ name: '', phone: '', side: 'GROOM', group: 'FAMILY', note: '' })
+    guestStore.create({
+      ...form,
+      nameHe: form.nameHe || undefined,
+      whatsapp: form.phone,
+      rsvpStatus: 'PENDING',
+      invitationSent: false,
+      invitationAcknowledged: false,
+      attendanceConfirmed: false,
+    })
+    setForm({ name: '', phone: '', side: 'GROOM', group: 'FAMILY', note: '', nameHe: '' })
     onSave()
   }
 
@@ -50,6 +61,7 @@ function AddDrawer({ open, onClose, onSave }: { open: boolean; onClose: () => vo
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <input className="input" placeholder="שם מלא *" value={form.name} onChange={e => upd('name', e.target.value)} />
               <input className="input" placeholder="טלפון *" type="tel" value={form.phone} onChange={e => upd('phone', e.target.value)} />
+              <input className="input" placeholder="שם בעברית (לאורחים דוברי צרפתית/אנגלית)" value={form.nameHe} onChange={e => upd('nameHe', e.target.value)} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <select className="input" value={form.side} onChange={e => upd('side', e.target.value)}>
                   <option value="GROOM">צד חתן</option><option value="BRIDE">צד כלה</option>
@@ -146,6 +158,7 @@ export default function GuestsPage() {
   const [search, setSearch] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [showBulk, setShowBulk] = useState(false)
+  const [showPhoto, setShowPhoto] = useState(false)
 
   const load = useCallback(() => setGuests(guestStore.getAll()), [])
   useEffect(() => { load() }, [load])
@@ -181,6 +194,7 @@ export default function GuestsPage() {
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-outline" onClick={exportCSV}><Download size={15} /></button>
           <button className="btn btn-outline" onClick={() => setShowBulk(true)}><ListPlus size={15} /> ייבוא</button>
+          <button className="btn btn-outline" onClick={() => setShowPhoto(true)}><Camera size={15} /> ייבוא תמונה</button>
           <button className="btn btn-gold" onClick={() => setShowAdd(true)}><UserPlus size={15} /> הוסף</button>
         </div>
       </div>
@@ -249,9 +263,17 @@ export default function GuestsPage() {
                   textDecoration: 'none', color: 'inherit', transition: 'background .12s' }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--gold-pale)')}
                   onMouseLeave={e => (e.currentTarget.style.background = '')}>
-                  <div className="avatar avatar-md">{initials(g.name)}</div>
+                  {g.photoUrl ? (
+                    <img src={g.photoUrl} alt={g.name}
+                      style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '1.5px solid var(--border)' }} />
+                  ) : (
+                    <div className="avatar avatar-md">{initials(g.name)}</div>
+                  )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--charcoal)' }}>{g.name}</div>
+                    {g.nameHe && g.nameHe !== g.name && (
+                      <div style={{ fontSize: '0.7rem', color: 'var(--gray-muted)', marginTop: 1 }}>{g.nameHe}</div>
+                    )}
                     <div style={{ fontSize: '0.7rem', color: 'var(--gray-muted)', marginTop: 2 }}>
                       {GROUPS.find(x => x.key === g.group)?.label} · {g.side === 'GROOM' ? 'חתן' : 'כלה'}
                     </div>
@@ -267,6 +289,7 @@ export default function GuestsPage() {
 
       <AddDrawer open={showAdd} onClose={() => setShowAdd(false)} onSave={() => { load(); setShowAdd(false) }} />
       <BulkImportDrawer open={showBulk} onClose={() => setShowBulk(false)} onSave={() => { load(); setShowBulk(false) }} />
+      <PhotoImportDrawer open={showPhoto} onClose={() => setShowPhoto(false)} onSave={() => { load(); setShowPhoto(false) }} />
     </div>
   )
 }

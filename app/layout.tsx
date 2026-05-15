@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Sidebar from '@/components/layout/Sidebar'
 import BottomNav from '@/components/layout/BottomNav'
 import SplashScreen from '@/components/SplashScreen'
+import { LangProvider } from '@/lib/lang-context'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -18,12 +19,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#F8F5F0" />
       </head>
       <body>
-        <SplashScreen />
-        <Sidebar />
-        <div className="main-content" style={{ minHeight: '100dvh', padding: '1.5rem 1.25rem' }}>
-          {children}
-        </div>
-        <BottomNav />
+        <LangProvider>
+          <SplashScreen />
+          <Sidebar />
+          <div className="main-content" style={{ minHeight: '100dvh', padding: '1.5rem 1.25rem' }}>
+            {children}
+          </div>
+          <BottomNav />
+        </LangProvider>
       </body>
     </html>
   )
